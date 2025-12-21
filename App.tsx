@@ -28,10 +28,10 @@ const WIZARD_MESSAGES = {
 };
 
 export default function App() {
-  // Initial state setup to NOT be 1 reflection (Mirror 130, Source 60 -> 2 reflections)
-  const [mirrorAngle, setMirrorAngle] = useState(130);
+  // Initial state setup to NOT be 1 reflection (Mirror 50, Source 60 -> 2 reflections)
+  const [mirrorAngle, setMirrorAngle] = useState(50);
   const [incidentAngle, setIncidentAngle] = useState(60);
-  
+
   // Game State
   const [gameState, setGameState] = useState<GameState>({
     started: false,
@@ -69,7 +69,7 @@ export default function App() {
       x: incidentPoint.x + sourceDist * Math.cos(degToRad(incidentAngle)),
       y: incidentPoint.y + sourceDist * Math.sin(degToRad(incidentAngle)),
     };
-    
+
     // Ray Vector
     const rayDirVector = {
       x: incidentPoint.x - sourcePos.x,
@@ -79,7 +79,7 @@ export default function App() {
 
     // Run Calculation
     const { path } = calculateRayPath(sourcePos, rayAngle, mirrors);
-    
+
     // Count Reflections: Path includes Start, Bounces..., End.
     // Reflections = Path.length - 2
     const reflectionCount = Math.max(0, path.length - 2);
@@ -107,32 +107,32 @@ export default function App() {
         }
 
         if (updateNeeded) {
-            // Check if both done
-            if (newProgress.methodA && newProgress.methodB) {
-                setGameState(prev => ({
-                    ...prev,
-                    challenge: 2,
-                    jewels: prev.jewels + 1,
-                    c1Progress: newProgress
-                }));
-                setWizardText(WIZARD_MESSAGES.c2_start);
-                triggerToast("Challenge 1 Complete! +1 Jewel 💎");
-            } else {
-                setGameState(prev => ({ ...prev, c1Progress: newProgress }));
-                setWizardText(WIZARD_MESSAGES.c1_progress);
-            }
+          // Check if both done
+          if (newProgress.methodA && newProgress.methodB) {
+            setGameState(prev => ({
+              ...prev,
+              challenge: 2,
+              jewels: prev.jewels + 1,
+              c1Progress: newProgress
+            }));
+            setWizardText(WIZARD_MESSAGES.c2_start);
+            triggerToast("Challenge 1 Complete! +1 Jewel 💎");
+          } else {
+            setGameState(prev => ({ ...prev, c1Progress: newProgress }));
+            setWizardText(WIZARD_MESSAGES.c1_progress);
+          }
         }
       }
     } else if (gameState.challenge === 2) {
-        if (reflectionCount === 2) {
-             setGameState(prev => ({
-                ...prev,
-                challenge: 3,
-                jewels: prev.jewels + 1
-            }));
-            setWizardText(WIZARD_MESSAGES.c3_start);
-            triggerToast("Challenge 2 Complete! +1 Jewel 💎");
-        }
+      if (reflectionCount === 2) {
+        setGameState(prev => ({
+          ...prev,
+          challenge: 3,
+          jewels: prev.jewels + 1
+        }));
+        setWizardText(WIZARD_MESSAGES.c3_start);
+        triggerToast("Challenge 2 Complete! +1 Jewel 💎");
+      }
     } else if (gameState.challenge === 3) {
       // Goal: 2+ reflections AND Ray comes back anti-parallel
       if (reflectionCount >= 2 && path.length >= 2) {
@@ -140,27 +140,27 @@ export default function App() {
         const prevPt = path[path.length - 2];
         const lastDx = lastPt.x - prevPt.x;
         const lastDy = lastPt.y - prevPt.y;
-        
+
         // Normalize Initial
-        const lenInit = Math.sqrt(rayDirVector.x**2 + rayDirVector.y**2);
+        const lenInit = Math.sqrt(rayDirVector.x ** 2 + rayDirVector.y ** 2);
         const nxInit = rayDirVector.x / lenInit;
         const nyInit = rayDirVector.y / lenInit;
 
         // Normalize Final
-        const lenFinal = Math.sqrt(lastDx**2 + lastDy**2);
+        const lenFinal = Math.sqrt(lastDx ** 2 + lastDy ** 2);
         const nxFinal = lastDx / lenFinal;
         const nyFinal = lastDy / lenFinal;
 
         // Dot product should be close to -1 (anti-parallel)
         // This generally happens when mirror angle is ~90 degrees
         const dot = nxInit * nxFinal + nyInit * nyFinal;
-        
+
         // Tolerance for "same path" direction
         if (dot < -0.99) {
-           setGameState(prev => ({
-              ...prev,
-              challenge: 4,
-              jewels: prev.jewels + 1
+          setGameState(prev => ({
+            ...prev,
+            challenge: 4,
+            jewels: prev.jewels + 1
           }));
           setWizardText(WIZARD_MESSAGES.complete);
           triggerToast("Grand Master! +1 Jewel 💎");
@@ -181,84 +181,84 @@ export default function App() {
   };
 
   const resetGame = () => {
-      setMirrorAngle(130);
-      setIncidentAngle(60);
-      setGameState({
-        started: false,
-        challenge: 1,
-        jewels: 0,
-        c1Progress: { methodA: false, methodB: false },
-      });
-      setWizardText(WIZARD_MESSAGES.intro);
+    setMirrorAngle(130);
+    setIncidentAngle(60);
+    setGameState({
+      started: false,
+      challenge: 1,
+      jewels: 0,
+      c1Progress: { methodA: false, methodB: false },
+    });
+    setWizardText(WIZARD_MESSAGES.intro);
   };
 
   return (
     <div className="flex flex-col h-screen bg-slate-900 text-white overflow-hidden font-sans">
-      
+
       {/* --- Game HUD --- */}
       {gameState.started && (
         <div className="absolute top-0 left-0 right-0 p-4 z-30 pointer-events-none flex flex-col items-center">
-            
-            {/* Top Bar: Wizard & Jewels */}
-            <div className="bg-slate-900/80 backdrop-blur-md border border-purple-500/30 rounded-2xl p-3 flex items-center gap-4 shadow-lg shadow-purple-900/20 max-w-2xl w-full pointer-events-auto transition-all duration-500">
-                <div className="text-3xl animate-bounce-slow filter drop-shadow-lg">🧙‍♂️</div>
-                <div className="flex-1">
-                    <p className="text-purple-200 text-sm md:text-base font-medium leading-tight">
-                        {wizardText}
-                    </p>
-                </div>
-                <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700">
-                    <Gem className="text-cyan-400 w-5 h-5 fill-cyan-400/20" />
-                    <span className="font-bold font-mono text-xl">{gameState.jewels}</span>
-                </div>
+
+          {/* Top Bar: Wizard & Jewels */}
+          <div className="bg-slate-900/80 backdrop-blur-md border border-purple-500/30 rounded-2xl p-3 flex items-center gap-4 shadow-lg shadow-purple-900/20 max-w-2xl w-full pointer-events-auto transition-all duration-500">
+            <div className="text-3xl animate-bounce-slow filter drop-shadow-lg">🧙‍♂️</div>
+            <div className="flex-1">
+              <p className="text-purple-200 text-sm md:text-base font-medium leading-tight">
+                {wizardText}
+              </p>
             </div>
+            <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700">
+              <Gem className="text-cyan-400 w-5 h-5 fill-cyan-400/20" />
+              <span className="font-bold font-mono text-xl">{gameState.jewels}</span>
+            </div>
+          </div>
 
-            {/* Objective Tracker */}
-            {gameState.challenge === 1 && (
-                 <div className="mt-2 flex gap-2 text-xs font-bold pointer-events-auto">
-                    <div className={`px-3 py-1 rounded-full border flex items-center gap-1 transition-colors ${gameState.c1Progress.methodA ? 'bg-green-900/50 border-green-500 text-green-400' : 'bg-slate-800/50 border-slate-700 text-slate-500'}`}>
-                        {gameState.c1Progress.methodA ? <CheckCircle2 size={12}/> : <div className="w-3 h-3 rounded-full border border-current"/>}
-                        Path Away
-                    </div>
-                    <div className={`px-3 py-1 rounded-full border flex items-center gap-1 transition-colors ${gameState.c1Progress.methodB ? 'bg-green-900/50 border-green-500 text-green-400' : 'bg-slate-800/50 border-slate-700 text-slate-500'}`}>
-                         {gameState.c1Progress.methodB ? <CheckCircle2 size={12}/> : <div className="w-3 h-3 rounded-full border border-current"/>}
-                        Open Door
-                    </div>
-                 </div>
-            )}
-            
-            {gameState.challenge === 2 && (
-                 <div className="mt-2 px-3 py-1 rounded-full border bg-slate-800/50 border-yellow-500/50 text-yellow-400 text-xs font-bold animate-pulse">
-                    Goal: Exactly 2 Reflections
-                 </div>
-            )}
+          {/* Objective Tracker */}
+          {gameState.challenge === 1 && (
+            <div className="mt-2 flex gap-2 text-xs font-bold pointer-events-auto">
+              <div className={`px-3 py-1 rounded-full border flex items-center gap-1 transition-colors ${gameState.c1Progress.methodA ? 'bg-green-900/50 border-green-500 text-green-400' : 'bg-slate-800/50 border-slate-700 text-slate-500'}`}>
+                {gameState.c1Progress.methodA ? <CheckCircle2 size={12} /> : <div className="w-3 h-3 rounded-full border border-current" />}
+                Path Away
+              </div>
+              <div className={`px-3 py-1 rounded-full border flex items-center gap-1 transition-colors ${gameState.c1Progress.methodB ? 'bg-green-900/50 border-green-500 text-green-400' : 'bg-slate-800/50 border-slate-700 text-slate-500'}`}>
+                {gameState.c1Progress.methodB ? <CheckCircle2 size={12} /> : <div className="w-3 h-3 rounded-full border border-current" />}
+                Open Door
+              </div>
+            </div>
+          )}
 
-            {gameState.challenge === 3 && (
-                 <div className="mt-2 px-3 py-1 rounded-full border bg-slate-800/50 border-cyan-500/50 text-cyan-400 text-xs font-bold animate-pulse">
-                    Goal: Return to Source (Retro-reflect)
-                 </div>
-            )}
+          {gameState.challenge === 2 && (
+            <div className="mt-2 px-3 py-1 rounded-full border bg-slate-800/50 border-yellow-500/50 text-yellow-400 text-xs font-bold animate-pulse">
+              Goal: Exactly 2 Reflections
+            </div>
+          )}
 
-             {/* Completion Banner */}
-            {gameState.challenge === 4 && (
-                <div className="mt-4 bg-gradient-to-r from-yellow-600 to-yellow-800 text-white px-6 py-2 rounded-full font-bold shadow-xl flex items-center gap-2 animate-in slide-in-from-top fade-in duration-700">
-                    <Gem className="fill-white" /> All Jewels Found! <Gem className="fill-white" />
-                    <button onClick={resetGame} className="ml-4 p-1 bg-white/20 rounded-full hover:bg-white/30" title="Restart">
-                        <RotateCcw size={16} />
-                    </button>
-                </div>
-            )}
+          {gameState.challenge === 3 && (
+            <div className="mt-2 px-3 py-1 rounded-full border bg-slate-800/50 border-cyan-500/50 text-cyan-400 text-xs font-bold animate-pulse">
+              Goal: Return to Source (Retro-reflect)
+            </div>
+          )}
+
+          {/* Completion Banner */}
+          {gameState.challenge === 4 && (
+            <div className="mt-4 bg-gradient-to-r from-yellow-600 to-yellow-800 text-white px-6 py-2 rounded-full font-bold shadow-xl flex items-center gap-2 animate-in slide-in-from-top fade-in duration-700">
+              <Gem className="fill-white" /> All Jewels Found! <Gem className="fill-white" />
+              <button onClick={resetGame} className="ml-4 p-1 bg-white/20 rounded-full hover:bg-white/30" title="Restart">
+                <RotateCcw size={16} />
+              </button>
+            </div>
+          )}
         </div>
       )}
 
       {/* --- Toast Notification --- */}
       {showToast && (
-          <div className="absolute top-32 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 zoom-in-95 duration-300">
-              <div className="bg-cyan-500 text-slate-900 px-6 py-3 rounded-full shadow-[0_0_20px_rgba(34,211,238,0.5)] font-bold flex items-center gap-2">
-                  <Gem size={20} className="fill-slate-900"/>
-                  {showToast}
-              </div>
+        <div className="absolute top-32 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 zoom-in-95 duration-300">
+          <div className="bg-cyan-500 text-slate-900 px-6 py-3 rounded-full shadow-[0_0_20px_rgba(34,211,238,0.5)] font-bold flex items-center gap-2">
+            <Gem size={20} className="fill-slate-900" />
+            {showToast}
           </div>
+        </div>
       )}
 
       {/* --- Intro Modal --- */}
@@ -267,7 +267,7 @@ export default function App() {
           <div className="bg-slate-900 border border-purple-500/50 rounded-2xl p-8 max-w-md w-full shadow-2xl shadow-purple-900/50 text-center relative overflow-hidden">
             {/* Decorative background glow */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-32 bg-purple-600/20 blur-3xl -z-10"></div>
-            
+
             <div className="text-6xl mb-6">🧙‍♂️</div>
             <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 mb-4">
               World of Two Mirrors
@@ -275,7 +275,7 @@ export default function App() {
             <p className="text-slate-300 mb-8 leading-relaxed">
               {WIZARD_MESSAGES.intro}
             </p>
-            
+
             <button
               onClick={startGame}
               className="group relative inline-flex items-center justify-center px-8 py-3 font-bold text-white transition-all duration-200 bg-purple-600 font-lg rounded-full hover:bg-purple-500 hover:shadow-[0_0_20px_rgba(147,51,234,0.5)] active:scale-95"
