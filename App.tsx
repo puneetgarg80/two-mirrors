@@ -42,10 +42,11 @@ export default function App() {
 
   const [wizardText, setWizardText] = useState(WIZARD_MESSAGES.intro);
   const [showToast, setShowToast] = useState<string | null>(null);
+  const [deflectionAngle, setDeflectionAngle] = useState(0);
 
   // --- Game Logic Engine ---
   useEffect(() => {
-    if (!gameState.started || gameState.challenge === 4) return;
+    if (!gameState.started) return;
 
     // 1. Reconstruct Simulation for Logic Check
     const infiniteLength = 50000;
@@ -83,6 +84,27 @@ export default function App() {
     // Count Reflections: Path includes Start, Bounces..., End.
     // Reflections = Path.length - 2
     const reflectionCount = Math.max(0, path.length - 2);
+
+    // Calculate Deflection
+    let currentDeflection = 0;
+    if (path.length >= 2) {
+      const lastPt = path[path.length - 1];
+      const prevPt = path[path.length - 2];
+      // Final ray angle
+      const finalAngleRad = Math.atan2(lastPt.y - prevPt.y, lastPt.x - prevPt.x);
+      const finalAngleDeg = (finalAngleRad * 180) / Math.PI;
+
+      // Initial ray angle is 'rayAngle'
+
+      // Deflection is difference. 
+      // Normalize to -180 to 180 or 0 to 360
+      let diff = finalAngleDeg - rayAngle;
+      // Normalize to 0-360 positive
+      diff = (diff + 360) % 360;
+
+      currentDeflection = diff;
+    }
+    setDeflectionAngle(currentDeflection);
 
     // 2. Evaluate Challenges
     if (gameState.challenge === 1) {
@@ -210,6 +232,11 @@ export default function App() {
             <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700">
               <Gem className="text-cyan-400 w-5 h-5 fill-cyan-400/20" />
               <span className="font-bold font-mono text-xl">{gameState.jewels}</span>
+            </div>
+            {/* Deflection Display */}
+            <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700 ml-2">
+              <span className="text-slate-400 text-xs uppercase tracking-wider font-bold">Deflection</span>
+              <span className="font-mono text-xl text-yellow-400">{Math.round(deflectionAngle)}°</span>
             </div>
           </div>
 
