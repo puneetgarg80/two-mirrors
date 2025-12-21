@@ -90,19 +90,24 @@ export default function App() {
     if (path.length >= 2) {
       const lastPt = path[path.length - 1];
       const prevPt = path[path.length - 2];
-      // Final ray angle
-      const finalAngleRad = Math.atan2(lastPt.y - prevPt.y, lastPt.x - prevPt.x);
-      const finalAngleDeg = (finalAngleRad * 180) / Math.PI;
 
-      // Initial ray angle is 'rayAngle'
+      // Vectors
+      const v1 = { x: rayDirVector.x, y: rayDirVector.y }; // Initial Ray
+      const v2 = { x: lastPt.x - prevPt.x, y: lastPt.y - prevPt.y }; // Final Ray
 
-      // Deflection is difference. 
-      // Normalize to -180 to 180 or 0 to 360
-      let diff = finalAngleDeg - rayAngle;
+      // Calculate Angle difference using atan2(cross, dot)
+      // This gives the signed angle from v1 to v2
+      const cross = v1.x * v2.y - v1.y * v2.x;
+      const dot = v1.x * v2.x + v1.y * v2.y;
+
+      const angleRad = Math.atan2(cross, dot);
+      let angleDeg = (angleRad * 180) / Math.PI;
+
       // Normalize to 0-360 positive
-      diff = (diff + 360) % 360;
+      if (angleDeg < 0) angleDeg += 360;
 
-      currentDeflection = diff;
+      // Round to nearest integer to avoid 179.999 issues
+      currentDeflection = Math.round(angleDeg);
     }
     setDeflectionAngle(currentDeflection);
 
