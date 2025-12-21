@@ -185,7 +185,7 @@ export default function App() {
 
       const hideTimer = setTimeout(() => {
         setShowGoal(false);
-      }, delay + 4000); // Hide 4s after showing
+      }, delay + 8000); // Hide 8s after showing
 
       return () => {
         clearTimeout(showTimer);
