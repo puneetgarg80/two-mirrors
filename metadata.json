@@ -1,0 +1,5 @@
+{
+  "name": "Mirror Reflections",
+  "description": "Interactive simulation of light rays reflecting between two hinged mirrors. Experiment with incidence angles and mirror configurations.",
+  "requestFramePermissions": []
+}
