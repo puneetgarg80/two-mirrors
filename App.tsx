@@ -3,7 +3,7 @@ import OpticalBench from './components/OpticalBench';
 import ControlPanel from './components/ControlPanel';
 import { calculateRayPath, degToRad } from './utils/geometry';
 import { Mirror } from './types';
-import { Gem, Play, CheckCircle2, RotateCcw } from 'lucide-react';
+import { Gem, Play, CheckCircle2, RotateCcw, Target, X } from 'lucide-react';
 
 // --- Game Constants & Types ---
 type ChallengeId = 1 | 2 | 3 | 4; // 1: One Refl, 2: Two Refl, 3: Retro-Refl, 4: Done
@@ -42,7 +42,7 @@ export default function App() {
 
   const [wizardText, setWizardText] = useState(WIZARD_MESSAGES.intro);
   const [showToast, setShowToast] = useState<string | null>(null);
-  const [deflectionAngle, setDeflectionAngle] = useState(0);
+  const [showGoal, setShowGoal] = useState(false);
 
   // --- Physics Simulation (Memoized) ---
   const simulation = useMemo(() => {
@@ -80,30 +80,7 @@ export default function App() {
     return { path, reflectionCount, rayDirVector, rayAngle };
   }, [mirrorAngle, incidentAngle, gameState.started]);
 
-  // --- Effect 1: Update Physics Display (Immediate) ---
-  useEffect(() => {
-    if (!simulation) return;
-    const { path, rayDirVector, rayAngle } = simulation;
 
-    let currentDeflection = 0;
-    if (path.length >= 2) {
-      const lastPt = path[path.length - 1];
-      const prevPt = path[path.length - 2];
-
-      const v1 = { x: rayDirVector.x, y: rayDirVector.y };
-      const v2 = { x: lastPt.x - prevPt.x, y: lastPt.y - prevPt.y };
-
-      const cross = v1.x * v2.y - v1.y * v2.x;
-      const dot = v1.x * v2.x + v1.y * v2.y;
-
-      const angleRad = Math.atan2(cross, dot);
-      let angleDeg = (angleRad * 180) / Math.PI;
-
-      if (angleDeg < 0) angleDeg += 360;
-      currentDeflection = Math.round(angleDeg);
-    }
-    setDeflectionAngle(currentDeflection);
-  }, [simulation]);
 
   // --- Effect 2: Game Logic Check (Debounced) ---
   useEffect(() => {
@@ -196,6 +173,27 @@ export default function App() {
     setTimeout(() => setShowToast(null), 3000);
   };
 
+  // --- Effect 3: Auto-Show Goal on Level Start ---
+  useEffect(() => {
+    if (gameState.started && gameState.challenge !== 4) {
+      // Delay: 3.2s if leveling up (wait for toast), 0.5s if just starting
+      const delay = gameState.challenge === 1 ? 500 : 3200;
+
+      const showTimer = setTimeout(() => {
+        setShowGoal(true);
+      }, delay);
+
+      const hideTimer = setTimeout(() => {
+        setShowGoal(false);
+      }, delay + 4000); // Hide 4s after showing
+
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(hideTimer);
+      };
+    }
+  }, [gameState.started, gameState.challenge]);
+
   const startGame = () => {
     setGameState(prev => ({ ...prev, started: true }));
     setWizardText(WIZARD_MESSAGES.c1_start);
@@ -218,59 +216,68 @@ export default function App() {
 
       {/* --- Game HUD --- */}
       {gameState.started && (
-        <div className="absolute top-0 left-0 right-0 p-4 z-30 pointer-events-none flex flex-col items-center">
+        <div className="absolute top-4 right-4 z-30 pointer-events-none flex flex-col items-end gap-2">
 
-          {/* Top Bar: Wizard & Jewels */}
-          <div className="bg-slate-900/80 backdrop-blur-md border border-purple-500/30 rounded-2xl p-3 flex items-center gap-4 shadow-lg shadow-purple-900/20 max-w-2xl w-full pointer-events-auto transition-all duration-500">
-            <div className="text-3xl animate-bounce-slow filter drop-shadow-lg">🧙‍♂️</div>
-            <div className="flex-1">
-              <p className="text-purple-200 text-sm md:text-base font-medium leading-tight">
-                {wizardText}
-              </p>
+          {/* Goal Button & Jewels (Compact) */}
+          <div className="flex items-center gap-2 pointer-events-auto">
+            <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-full px-3 py-1 flex items-center gap-2">
+              <Gem className="text-cyan-400 w-4 h-4 fill-cyan-400/20" />
+              <span className="font-bold font-mono text-lg">{gameState.jewels}</span>
             </div>
-            <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700">
-              <Gem className="text-cyan-400 w-5 h-5 fill-cyan-400/20" />
-              <span className="font-bold font-mono text-xl">{gameState.jewels}</span>
-            </div>
-            {/* Deflection Display */}
-            <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700 ml-2">
-              <span className="text-slate-400 text-xs uppercase tracking-wider font-bold">Deflection</span>
-              <span className="font-mono text-xl text-yellow-400">{Math.round(deflectionAngle)}°</span>
-            </div>
+
+            <button
+              onClick={() => setShowGoal(!showGoal)}
+              className={`px-3 py-1 rounded-full border transition-all duration-300 shadow-lg ${showGoal ? 'bg-purple-600 border-purple-400 text-white' : 'bg-slate-900/80 border-purple-500/50 text-purple-400 hover:bg-slate-800'}`}
+            >
+              {showGoal ? "Close" : "Goal"}
+            </button>
           </div>
 
-          {/* Objective Tracker */}
-          {gameState.challenge === 1 && (
-            <div className="mt-2 flex gap-2 text-xs font-bold pointer-events-auto">
-              <div className={`px-3 py-1 rounded-full border flex items-center gap-1 transition-colors ${gameState.c1Progress.methodA ? 'bg-green-900/50 border-green-500 text-green-400' : 'bg-slate-800/50 border-slate-700 text-slate-500'}`}>
-                {gameState.c1Progress.methodA ? <CheckCircle2 size={12} /> : <div className="w-3 h-3 rounded-full border border-current" />}
-                Path Away
+          {/* Goal/Wizard Content (Toggled) */}
+          {showGoal && (
+            <div className="bg-slate-900/90 backdrop-blur-md border border-purple-500/30 rounded-2xl p-4 shadow-xl shadow-purple-900/20 w-64 md:w-80 pointer-events-auto animate-in slide-in-from-right fade-in duration-200 origin-top-right">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl pt-1">🧙‍♂️</div>
+                <p className="text-purple-200 text-sm leading-tight flex-1">
+                  {wizardText}
+                </p>
               </div>
-              <div className={`px-3 py-1 rounded-full border flex items-center gap-1 transition-colors ${gameState.c1Progress.methodB ? 'bg-green-900/50 border-green-500 text-green-400' : 'bg-slate-800/50 border-slate-700 text-slate-500'}`}>
-                {gameState.c1Progress.methodB ? <CheckCircle2 size={12} /> : <div className="w-3 h-3 rounded-full border border-current" />}
-                Open Door
-              </div>
-            </div>
-          )}
 
-          {gameState.challenge === 2 && (
-            <div className="mt-2 px-3 py-1 rounded-full border bg-slate-800/50 border-yellow-500/50 text-yellow-400 text-xs font-bold animate-pulse">
-              Goal: Exactly 2 Reflections
-            </div>
-          )}
+              {/* Objective Tracker */}
+              {gameState.challenge === 1 && (
+                <div className="mt-3 flex flex-col gap-2 text-xs font-bold">
+                  <div className={`px-2 py-1 rounded-full border flex items-center gap-2 transition-colors ${gameState.c1Progress.methodA ? 'bg-green-900/50 border-green-500 text-green-400' : 'bg-slate-800/50 border-slate-700 text-slate-500'}`}>
+                    {gameState.c1Progress.methodA ? <CheckCircle2 size={12} /> : <div className="w-3 h-3 rounded-full border border-current" />}
+                    Path Away
+                  </div>
+                  <div className={`px-2 py-1 rounded-full border flex items-center gap-2 transition-colors ${gameState.c1Progress.methodB ? 'bg-green-900/50 border-green-500 text-green-400' : 'bg-slate-800/50 border-slate-700 text-slate-500'}`}>
+                    {gameState.c1Progress.methodB ? <CheckCircle2 size={12} /> : <div className="w-3 h-3 rounded-full border border-current" />}
+                    Open Door
+                  </div>
+                </div>
+              )}
 
-          {gameState.challenge === 3 && (
-            <div className="mt-2 px-3 py-1 rounded-full border bg-slate-800/50 border-cyan-500/50 text-cyan-400 text-xs font-bold animate-pulse">
-              Goal: Return to Source (Retro-reflect)
+              {gameState.challenge === 2 && (
+                <div className="mt-3 px-3 py-1 rounded-full border bg-slate-800/50 border-yellow-500/50 text-yellow-400 text-xs font-bold animate-pulse text-center">
+                  Goal: Exactly 2 Reflections
+                </div>
+              )}
+
+              {gameState.challenge === 3 && (
+                <div className="mt-3 px-3 py-1 rounded-full border bg-slate-800/50 border-cyan-500/50 text-cyan-400 text-xs font-bold animate-pulse text-center">
+                  Goal: Return to Source (Retro-reflect)
+                </div>
+              )}
             </div>
           )}
 
           {/* Completion Banner */}
           {gameState.challenge === 4 && (
-            <div className="mt-4 bg-gradient-to-r from-yellow-600 to-yellow-800 text-white px-6 py-2 rounded-full font-bold shadow-xl flex items-center gap-2 animate-in slide-in-from-top fade-in duration-700">
-              <Gem className="fill-white" /> All Jewels Found! <Gem className="fill-white" />
-              <button onClick={resetGame} className="ml-4 p-1 bg-white/20 rounded-full hover:bg-white/30" title="Restart">
-                <RotateCcw size={16} />
+            <div className="mt-2 bg-gradient-to-r from-yellow-600 to-yellow-800 text-white px-4 py-2 rounded-full font-bold shadow-xl flex items-center gap-2 animate-in slide-in-from-top fade-in duration-700 pointer-events-auto">
+              <Gem className="fill-white w-4 h-4" />
+              <span className="text-sm">All Jewels!</span>
+              <button onClick={resetGame} className="ml-auto p-1 bg-white/20 rounded-full hover:bg-white/30" title="Restart">
+                <RotateCcw size={14} />
               </button>
             </div>
           )}
