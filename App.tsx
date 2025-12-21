@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import OpticalBench from './components/OpticalBench';
 import ControlPanel from './components/ControlPanel';
 import { calculateRayPath, degToRad } from './utils/geometry';
@@ -44,11 +44,10 @@ export default function App() {
   const [showToast, setShowToast] = useState<string | null>(null);
   const [deflectionAngle, setDeflectionAngle] = useState(0);
 
-  // --- Game Logic Engine ---
-  useEffect(() => {
-    if (!gameState.started) return;
+  // --- Physics Simulation (Memoized) ---
+  const simulation = useMemo(() => {
+    if (!gameState.started) return null;
 
-    // 1. Reconstruct Simulation for Logic Check
     const infiniteLength = 50000;
     const m1End = { x: infiniteLength, y: 0 };
     const m2End = {
@@ -60,9 +59,7 @@ export default function App() {
       { start: { x: 0, y: 0 }, end: m2End, angle: mirrorAngle, id: 'm2' },
     ];
 
-    // Source position calculation (replicated from OpticalBench logic)
-    // We only need the geometric setup for ray tracing
-    const handleRadius = 100; // Arbitrary scale, doesn't affect angles
+    const handleRadius = 100;
     const fixedIncidentDist = handleRadius * 0.6;
     const sourceDist = handleRadius * 0.3;
     const incidentPoint = { x: fixedIncidentDist, y: 0 };
@@ -71,131 +68,128 @@ export default function App() {
       y: incidentPoint.y + sourceDist * Math.sin(degToRad(incidentAngle)),
     };
 
-    // Ray Vector
     const rayDirVector = {
       x: incidentPoint.x - sourcePos.x,
       y: incidentPoint.y - sourcePos.y
     };
     const rayAngle = (Math.atan2(rayDirVector.y, rayDirVector.x) * 180) / Math.PI;
 
-    // Run Calculation
     const { path } = calculateRayPath(sourcePos, rayAngle, mirrors);
-
-    // Count Reflections: Path includes Start, Bounces..., End.
-    // Reflections = Path.length - 2
     const reflectionCount = Math.max(0, path.length - 2);
 
-    // Calculate Deflection
+    return { path, reflectionCount, rayDirVector, rayAngle };
+  }, [mirrorAngle, incidentAngle, gameState.started]);
+
+  // --- Effect 1: Update Physics Display (Immediate) ---
+  useEffect(() => {
+    if (!simulation) return;
+    const { path, rayDirVector, rayAngle } = simulation;
+
     let currentDeflection = 0;
     if (path.length >= 2) {
       const lastPt = path[path.length - 1];
       const prevPt = path[path.length - 2];
 
-      // Vectors
-      const v1 = { x: rayDirVector.x, y: rayDirVector.y }; // Initial Ray
-      const v2 = { x: lastPt.x - prevPt.x, y: lastPt.y - prevPt.y }; // Final Ray
+      const v1 = { x: rayDirVector.x, y: rayDirVector.y };
+      const v2 = { x: lastPt.x - prevPt.x, y: lastPt.y - prevPt.y };
 
-      // Calculate Angle difference using atan2(cross, dot)
-      // This gives the signed angle from v1 to v2
       const cross = v1.x * v2.y - v1.y * v2.x;
       const dot = v1.x * v2.x + v1.y * v2.y;
 
       const angleRad = Math.atan2(cross, dot);
       let angleDeg = (angleRad * 180) / Math.PI;
 
-      // Normalize to 0-360 positive
       if (angleDeg < 0) angleDeg += 360;
-
-      // Round to nearest integer to avoid 179.999 issues
       currentDeflection = Math.round(angleDeg);
     }
     setDeflectionAngle(currentDeflection);
+  }, [simulation]);
 
-    // 2. Evaluate Challenges
-    if (gameState.challenge === 1) {
-      if (reflectionCount === 1) {
-        let updateNeeded = false;
-        const newProgress = { ...gameState.c1Progress };
+  // --- Effect 2: Game Logic Check (Debounced) ---
+  useEffect(() => {
+    if (!simulation || gameState.challenge === 4) return;
 
-        // Method A: Left of Normal (Source > 90)
-        // Note: incidentAngle is source angle. If > 90, it points away from hinge.
-        if (incidentAngle > 90 && !newProgress.methodA) {
-          newProgress.methodA = true;
-          updateNeeded = true;
-          triggerToast("Discovered: The Path Away!");
+    const timer = setTimeout(() => {
+      const { reflectionCount, path, rayDirVector } = simulation;
+
+      // 2. Evaluate Challenges
+      if (gameState.challenge === 1) {
+        if (reflectionCount === 1) {
+          let updateNeeded = false;
+          const newProgress = { ...gameState.c1Progress };
+
+          // Method A: Left of Normal (Source > 90)
+          if (incidentAngle > 90 && !newProgress.methodA) {
+            newProgress.methodA = true;
+            updateNeeded = true;
+            triggerToast("Discovered: The Path Away!");
+          }
+
+          // Method B: Wide Angle
+          if (incidentAngle <= 90 && !newProgress.methodB) {
+            newProgress.methodB = true;
+            updateNeeded = true;
+            triggerToast("Discovered: The Open Door!");
+          }
+
+          if (updateNeeded) {
+            if (newProgress.methodA && newProgress.methodB) {
+              setGameState(prev => ({
+                ...prev,
+                challenge: 2,
+                jewels: prev.jewels + 1,
+                c1Progress: newProgress
+              }));
+              setWizardText(WIZARD_MESSAGES.c2_start);
+              triggerToast("Challenge 1 Complete! +1 Jewel 💎");
+            } else {
+              setGameState(prev => ({ ...prev, c1Progress: newProgress }));
+              setWizardText(WIZARD_MESSAGES.c1_progress);
+            }
+          }
         }
-
-        // Method B: Wide Angle (Mirror Angle > Reflected Angle effectively)
-        // If incident <= 90, ray enters wedge, but misses M2.
-        if (incidentAngle <= 90 && !newProgress.methodB) {
-          newProgress.methodB = true;
-          updateNeeded = true;
-          triggerToast("Discovered: The Open Door!");
+      } else if (gameState.challenge === 2) {
+        if (reflectionCount === 2) {
+          setGameState(prev => ({
+            ...prev,
+            challenge: 3,
+            jewels: prev.jewels + 1
+          }));
+          setWizardText(WIZARD_MESSAGES.c3_start);
+          triggerToast("Challenge 2 Complete! +1 Jewel 💎");
         }
+      } else if (gameState.challenge === 3) {
+        if (reflectionCount >= 2 && path.length >= 2) {
+          const lastPt = path[path.length - 1];
+          const prevPt = path[path.length - 2];
+          const lastDx = lastPt.x - prevPt.x;
+          const lastDy = lastPt.y - prevPt.y;
 
-        if (updateNeeded) {
-          // Check if both done
-          if (newProgress.methodA && newProgress.methodB) {
+          const lenInit = Math.sqrt(rayDirVector.x ** 2 + rayDirVector.y ** 2);
+          const nxInit = rayDirVector.x / lenInit;
+          const nyInit = rayDirVector.y / lenInit;
+
+          const lenFinal = Math.sqrt(lastDx ** 2 + lastDy ** 2);
+          const nxFinal = lastDx / lenFinal;
+          const nyFinal = lastDy / lenFinal;
+
+          const dot = nxInit * nxFinal + nyInit * nyFinal;
+
+          if (dot < -0.99) {
             setGameState(prev => ({
               ...prev,
-              challenge: 2,
-              jewels: prev.jewels + 1,
-              c1Progress: newProgress
+              challenge: 4,
+              jewels: prev.jewels + 1
             }));
-            setWizardText(WIZARD_MESSAGES.c2_start);
-            triggerToast("Challenge 1 Complete! +1 Jewel 💎");
-          } else {
-            setGameState(prev => ({ ...prev, c1Progress: newProgress }));
-            setWizardText(WIZARD_MESSAGES.c1_progress);
+            setWizardText(WIZARD_MESSAGES.complete);
+            triggerToast("Grand Master! +1 Jewel 💎");
           }
         }
       }
-    } else if (gameState.challenge === 2) {
-      if (reflectionCount === 2) {
-        setGameState(prev => ({
-          ...prev,
-          challenge: 3,
-          jewels: prev.jewels + 1
-        }));
-        setWizardText(WIZARD_MESSAGES.c3_start);
-        triggerToast("Challenge 2 Complete! +1 Jewel 💎");
-      }
-    } else if (gameState.challenge === 3) {
-      // Goal: 2+ reflections AND Ray comes back anti-parallel
-      if (reflectionCount >= 2 && path.length >= 2) {
-        const lastPt = path[path.length - 1];
-        const prevPt = path[path.length - 2];
-        const lastDx = lastPt.x - prevPt.x;
-        const lastDy = lastPt.y - prevPt.y;
+    }, 500); // Debounce delay
 
-        // Normalize Initial
-        const lenInit = Math.sqrt(rayDirVector.x ** 2 + rayDirVector.y ** 2);
-        const nxInit = rayDirVector.x / lenInit;
-        const nyInit = rayDirVector.y / lenInit;
-
-        // Normalize Final
-        const lenFinal = Math.sqrt(lastDx ** 2 + lastDy ** 2);
-        const nxFinal = lastDx / lenFinal;
-        const nyFinal = lastDy / lenFinal;
-
-        // Dot product should be close to -1 (anti-parallel)
-        // This generally happens when mirror angle is ~90 degrees
-        const dot = nxInit * nxFinal + nyInit * nyFinal;
-
-        // Tolerance for "same path" direction
-        if (dot < -0.99) {
-          setGameState(prev => ({
-            ...prev,
-            challenge: 4,
-            jewels: prev.jewels + 1
-          }));
-          setWizardText(WIZARD_MESSAGES.complete);
-          triggerToast("Grand Master! +1 Jewel 💎");
-        }
-      }
-    }
-
-  }, [mirrorAngle, incidentAngle, gameState.started, gameState.challenge, gameState.c1Progress]);
+    return () => clearTimeout(timer);
+  }, [simulation, gameState.challenge, gameState.c1Progress, incidentAngle, setGameState, setWizardText]);
 
   const triggerToast = (msg: string) => {
     setShowToast(msg);
