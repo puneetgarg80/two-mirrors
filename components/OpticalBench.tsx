@@ -19,7 +19,7 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   const svgRef = useRef<SVGSVGElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [dragTarget, setDragTarget] = useState<'mirror' | 'ray' | null>(null);
-  const [showInfo, setShowInfo] = useState(false);
+  const [showInfo, setShowInfo] = useState(true);
 
   useEffect(() => {
     const updateDim = () => {
@@ -101,7 +101,7 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   };
   const rayAngle = radToDeg(Math.atan2(rayDirVector.y, rayDirVector.x));
 
-  const { path, arrows } = useMemo(() =>
+  const { path, arrows, reflections, totalDeviation } = useMemo(() =>
     calculateRayPath(rayStart, rayAngle, mirrors),
     [rayStart, rayAngle, mirrors]);
 
@@ -187,9 +187,17 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
           <div className="mt-2 bg-slate-900/90 backdrop-blur-md border border-slate-700 p-4 rounded-xl text-slate-300 text-xs md:text-sm max-w-[200px] shadow-xl animate-in fade-in slide-in-from-top-2">
             <h1 className="font-bold text-white text-lg mb-2">Optics Lab</h1>
             <p className="mb-1">Drag <span className="text-cyan-400 font-bold">blue handle</span> to rotate mirror.</p>
-            <p>Drag <span className="text-yellow-400 font-bold">yellow source</span> to move light.</p>
+            <p className="mb-2">Drag <span className="text-yellow-400 font-bold">yellow source</span> to move light.</p>
           </div>
         )}
+      </div>
+
+      {/* Persistent Deviation Display */}
+      <div className="absolute top-16 left-4 z-10">
+        <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700 px-4 py-2 rounded-xl shadow-xl">
+          <span className="text-slate-400 text-sm mr-2">Deviation:</span>
+          <span className="font-mono text-cyan-400 font-bold text-lg">{Math.round(totalDeviation)}°</span>
+        </div>
       </div>
 
       <svg
@@ -291,6 +299,53 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
                 fill="#facc15"
                 transform={`translate(${sp.x}, ${sp.y}) rotate(${-arrow.angle})`}
               />
+            );
+          })}
+        </g>
+
+        {/* --- REFLECTION ANGLES --- */}
+        <g>
+          {reflections.map((ref, idx) => {
+            const sp = mapToSvg(ref.point);
+
+            // Calculate normal end point in math space
+            const normalLen = 40;
+            const normalEndMath = {
+              x: ref.point.x + normalLen * Math.cos(degToRad(ref.normalAngle)),
+              y: ref.point.y + normalLen * Math.sin(degToRad(ref.normalAngle))
+            };
+            const spEnd = mapToSvg(normalEndMath);
+
+            // Offset text along the normal
+            const dist = 20;
+            const tx = sp.x + dist * Math.cos(degToRad(-ref.normalAngle));
+            const ty = sp.y + dist * Math.sin(degToRad(-ref.normalAngle));
+
+            return (
+              <g key={idx}>
+                {/* Normal Vector */}
+                <line
+                  x1={sp.x}
+                  y1={sp.y}
+                  x2={spEnd.x}
+                  y2={spEnd.y}
+                  stroke="#94a3b8"
+                  strokeWidth="1"
+                  strokeDasharray="4 4"
+                  opacity="0.6"
+                />
+                <text
+                  x={tx}
+                  y={ty}
+                  fill="#ffffff"
+                  fontSize="10"
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                  style={{ textShadow: '0px 0px 3px #000' }}
+                >
+                  {Math.round(ref.incidentAngle)}°
+                </text>
+              </g>
             );
           })}
         </g>

@@ -47,7 +47,7 @@ export const intersectRaySegment = (
       x: rayOrigin.x + rayDir.x * t1,
       y: rayOrigin.y + rayDir.y * t1,
     };
-    
+
     // Normal calculation: (-dy, dx) normalized
     let nx = -v4;
     let ny = v3;
@@ -63,7 +63,7 @@ export const intersectRaySegment = (
 
     return { point, t: t1, normal: { x: nx, y: ny } };
   }
-  
+
   return null;
 };
 
@@ -83,7 +83,8 @@ export const calculateRayPath = (
 ) => {
   const path: Point[] = [startPoint];
   const arrows: { pos: Point; angle: number }[] = [];
-  
+  const reflections: { point: Point; incidentAngle: number; reflectionAngle: number; normalAngle: number }[] = [];
+
   let currentOrigin = startPoint;
   let currentDir = {
     x: Math.cos(degToRad(startAngleDeg)),
@@ -92,11 +93,11 @@ export const calculateRayPath = (
 
   // Add initial arrow
   arrows.push({
-      pos: {
-          x: currentOrigin.x + currentDir.x * 30,
-          y: currentOrigin.y + currentDir.y * 30
-      },
-      angle: startAngleDeg
+    pos: {
+      x: currentOrigin.x + currentDir.x * 30,
+      y: currentOrigin.y + currentDir.y * 30
+    },
+    angle: startAngleDeg
   });
 
   for (let i = 0; i < maxBounces; i++) {
@@ -113,20 +114,43 @@ export const calculateRayPath = (
 
     if (closestIntersection) {
       path.push(closestIntersection.point);
-      
+
+      // Calculate angles
+      // Incident angle: angle between -Ray and Normal
+      // Dot product: A . B = |A||B|cos(theta)
+      // We want angle with normal. 
+      // Incoming vector is currentDir. 
+      // Normal is closestIntersection.normal.
+      // We want angle between -currentDir (pointing back) and normal.
+      // -currentDir dot normal
+      const dot = -currentDir.x * closestIntersection.normal.x + -currentDir.y * closestIntersection.normal.y;
+      // Clamp for safety
+      const clampedDot = Math.max(-1, Math.min(1, dot));
+      const angleRad = Math.acos(clampedDot);
+      const angleDeg = radToDeg(angleRad);
+
+      const normalAngle = radToDeg(Math.atan2(closestIntersection.normal.y, closestIntersection.normal.x));
+
+      reflections.push({
+        point: closestIntersection.point,
+        incidentAngle: angleDeg,
+        reflectionAngle: angleDeg, // Law of reflection: i = r
+        normalAngle: normalAngle
+      });
+
       // Reflect
       currentDir = reflectVector(currentDir, closestIntersection.normal);
       currentOrigin = closestIntersection.point;
-      
+
       const angle = radToDeg(Math.atan2(currentDir.y, currentDir.x));
-      
+
       // Add arrow for reflection, slightly offset from the bounce point
       arrows.push({
-          pos: {
-              x: currentOrigin.x + currentDir.x * 40,
-              y: currentOrigin.y + currentDir.y * 40
-          },
-          angle: angle
+        pos: {
+          x: currentOrigin.x + currentDir.x * 40,
+          y: currentOrigin.y + currentDir.y * 40
+        },
+        angle: angle
       });
 
     } else {
@@ -139,5 +163,25 @@ export const calculateRayPath = (
     }
   }
 
-  return { path, arrows };
+  // Calculate Total Deviation
+  // cos(theta) = (v1 . v2) / (|v1| |v2|)
+  // Vectors are normalized (length 1)
+  // Initial dir: startDir (computed below)
+  // Final dir: currentDir
+
+  const startDir = {
+    x: Math.cos(degToRad(startAngleDeg)),
+    y: Math.sin(degToRad(startAngleDeg)),
+  };
+
+  const dotDev = startDir.x * currentDir.x + startDir.y * currentDir.y;
+  const clampedDotDev = Math.max(-1, Math.min(1, dotDev));
+  // Deviation is the angle *change*, so we want angle between vectors.
+  // Actually, deviation is often defined as angle between extension of incident and reflected.
+  // If dot is 1 (parallel), deviation is 0. If dot is -1 (anti-parallel), deviation is 180.
+  // acos gives exactly this: angle between them.
+  const deviationRad = Math.acos(clampedDotDev);
+  const totalDeviation = radToDeg(deviationRad);
+
+  return { path, arrows, reflections, totalDeviation };
 };
