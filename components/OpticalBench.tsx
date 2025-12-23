@@ -133,14 +133,15 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
       // Calculate angle of mathP relative to (0,0)
       let angle = radToDeg(Math.atan2(mathP.y, mathP.x));
       if (angle < 0) angle += 360;
-      setMirrorAngle(angle);
+      // Snap to nearest integer
+      setMirrorAngle(Math.round(angle));
     } else if (dragTarget === 'ray') {
       // Calculate angle of mathP relative to incidentPoint
       const dx = mathP.x - incidentPoint.x;
       const dy = mathP.y - incidentPoint.y;
       let angle = radToDeg(Math.atan2(dy, dx));
       if (angle < 0) angle += 360;
-      setIncidentAngle(angle);
+      setIncidentAngle(Math.round(angle));
     }
   };
 
