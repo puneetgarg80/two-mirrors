@@ -48,8 +48,8 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   const fixedIncidentDist = handleRadius * 0.6;
   const sourceDist = handleRadius * 0.3;
 
-  const centerX = dimensions.width / 2;
-  const centerY = dimensions.height / 2;
+  const centerX = 150;
+  const centerY = dimensions.height - 150;
 
   const mapToSvg = (p: Point) => ({
     x: centerX + p.x,
