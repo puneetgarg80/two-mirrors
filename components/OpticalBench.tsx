@@ -170,6 +170,43 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
 
   const anglePath = `M ${svgArcStart.x} ${svgArcStart.y} A ${arcRadius} ${arcRadius} 0 ${largeArcFlag} 0 ${svgArcEnd.x} ${svgArcEnd.y}`;
 
+  // Helper to render hatches (shaded side of mirror)
+  const renderHatches = (mAngle: number, type: 'm1' | 'm2') => {
+    const hatchSpacing = 12;
+    const hatchLen = 8;
+    // Calculate visible length based on screen size
+    const maxLen = Math.max(dimensions.width, dimensions.height, 1000) * 1.5;
+
+    // M1 (0 deg): Back is -90. Slant -135 (points down-left).
+    // M2 (angle): Back is angle+90. Slant angle+45 (points "up-left" relative to mirror vector).
+    const hatchDir = type === 'm1' ? -135 : mAngle + 45;
+
+    const elements = [];
+    for (let d = hatchSpacing; d < maxLen; d += hatchSpacing) {
+      const mx = d * Math.cos(degToRad(mAngle));
+      const my = d * Math.sin(degToRad(mAngle));
+
+      const px = mx + hatchLen * Math.cos(degToRad(hatchDir));
+      const py = my + hatchLen * Math.sin(degToRad(hatchDir));
+
+      const p1 = mapToSvg({ x: mx, y: my });
+      const p2 = mapToSvg({ x: px, y: py });
+
+      elements.push(
+        <line
+          key={d}
+          x1={p1.x}
+          y1={p1.y}
+          x2={p2.x}
+          y2={p2.y}
+          stroke="#475569"
+          strokeWidth="1.5"
+        />
+      );
+    }
+    return <g className="pointer-events-none">{elements}</g>;
+  };
+
   return (
     <div className="w-full h-full bg-slate-950 relative overflow-hidden select-none">
 
@@ -222,6 +259,10 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
         {/* --- Center Crosshair (Subtle) --- */}
         <line x1={centerX - 5} y1={centerY} x2={centerX + 5} y2={centerY} stroke="#334155" />
         <line x1={centerX} y1={centerY - 5} x2={centerX} y2={centerY + 5} stroke="#334155" />
+
+        {/* --- MIRROR HATCHES --- */}
+        {renderHatches(0, 'm1')}
+        {renderHatches(mirrorAngle, 'm2')}
 
         {/* --- MIRRORS --- */}
         {/* Mirror 1 (Horizontal) */}

@@ -23,8 +23,8 @@ const WIZARD_MESSAGES = {
   c1_start: "Your first challenge: Tame the light to bounce exactly ONCE. There are TWO distinct ways to do this. Find them both!",
   c1_progress: "Brilliant! You found one way. Now, find the other path to single reflection.",
   c2_start: "Excellent work! Now, bend the light to bounce exactly TWICE.",
-  c3_start: "You are a master! Final challenge: Create a Retro-Reflector. Make the light go BACK the way it came (parallel to source) after 2 reflections.",
-  complete: "Magnificent! A 90-degree corner reflects light back to its source. You have claimed all the jewels!",
+  c3_start: "You are a master! Final challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray after exactly 2 reflections.",
+  complete: "Magnificent! A 90-degree corner reflects light back parallel to its source. You have claimed all the jewels!",
 };
 
 export default function App() {
@@ -136,7 +136,7 @@ export default function App() {
           triggerToast("Challenge 2 Complete! +1 Jewel 💎");
         }
       } else if (gameState.challenge === 3) {
-        if (reflectionCount >= 2 && path.length >= 2) {
+        if (reflectionCount === 2 && path.length >= 2) {
           const lastPt = path[path.length - 1];
           const prevPt = path[path.length - 2];
           const lastDx = lastPt.x - prevPt.x;
@@ -265,7 +265,7 @@ export default function App() {
 
               {gameState.challenge === 3 && (
                 <div className="mt-3 px-3 py-1 rounded-full border bg-slate-800/50 border-cyan-500/50 text-cyan-400 text-xs font-bold animate-pulse text-center">
-                  Goal: Return to Source (Retro-reflect)
+                  Goal: Parallel Output (2 Reflections)
                 </div>
               )}
             </div>
