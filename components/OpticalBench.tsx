@@ -21,11 +21,14 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   const [dragTarget, setDragTarget] = useState<'mirror' | 'ray' | null>(null);
   const [showInfo, setShowInfo] = useState(true);
 
+  const [sourceDist, setSourceDist] = useState(100); // Default initial distance
+
   useEffect(() => {
     const updateDim = () => {
       if (svgRef.current) {
         const { clientWidth, clientHeight } = svgRef.current;
         setDimensions({ width: clientWidth, height: clientHeight });
+        // Scale default distance on resize if needed, or keep relative
       }
     };
     window.addEventListener('resize', updateDim);
@@ -46,7 +49,8 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   const infiniteLength = 50000;
 
   const fixedIncidentDist = handleRadius * 0.6;
-  const sourceDist = handleRadius * 0.3;
+  // Use state for source distance
+  // const sourceDist = handleRadius * 0.3; // Replaced by state
 
   const centerX = 150;
   const centerY = dimensions.height - 150;
@@ -139,6 +143,12 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
       // Calculate angle of mathP relative to incidentPoint
       const dx = mathP.x - incidentPoint.x;
       const dy = mathP.y - incidentPoint.y;
+
+      const newDist = Math.sqrt(dx * dx + dy * dy);
+      // Clamp distance to reasonable limits (e.g. 20 to 500)
+      const clampedDist = Math.max(20, Math.min(newDist, 1000));
+      setSourceDist(clampedDist);
+
       let angle = radToDeg(Math.atan2(dy, dx));
       if (angle < 0) angle += 360;
       setIncidentAngle(Math.round(angle));
