@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import OpticalBench from './components/OpticalBench';
 import ControlPanel from './components/ControlPanel';
+import DialoguePanel from './components/DialoguePanel';
 import { calculateRayPath, degToRad } from './utils/geometry';
 import { Mirror } from './types';
-import { Gem, Play, CheckCircle2, RotateCcw, Target, X } from 'lucide-react';
+import { Gem, CheckCircle2, RotateCcw } from 'lucide-react';
 
 // --- Game Constants & Types ---
 type ChallengeId = 1 | 2 | 3 | 4 | 5 | 6 | 7; // ... 4: Constancy Check, 5: Test Other Angles, 6: Theory Quiz, 7: Done
@@ -28,7 +29,9 @@ const WIZARD_MESSAGES = {
   c2_start: "Excellent work! Now, bend the light to bounce exactly TWICE.",
   c3_start: "You are a master! Final challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray after exactly 2 reflections.",
   c4_start: "Remarkable! You found the 90° corner. Now, KEEP the mirror at 90° and CHANGE the light source angle. Observe what happens to the deviation.",
+  c4_quiz: "You changed the incident angle while keeping the mirrors at 90°. Does the deviation angle change?",
   c5_start: "Interesting... the deviation stayed constant at 180°. Does this rule hold for OTHER angles? Set the mirror to roughly 60°. Then move the light to check constancy.",
+  c5_quiz: "You tested 90° and 60°. In a 2-reflection system, the total deviation depends on:",
   complete: "Magnificent! You have discovered the General Law: For 2 reflections, Total Deviation depends ONLY on the Mirror Angle (D = 360 - 2θ). You are a true Optic Master!",
 };
 
@@ -47,8 +50,7 @@ export default function App() {
 
   const [wizardText, setWizardText] = useState(WIZARD_MESSAGES.intro);
   const [showToast, setShowToast] = useState<string | null>(null);
-  const [showGoal, setShowGoal] = useState(false);
-  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizTriggered, setQuizTriggered] = useState(false); // Helper to switch Dialogue to Quiz Mode
 
   // --- Physics Simulation (Memoized) ---
   const simulation = useMemo(() => {
@@ -87,7 +89,7 @@ export default function App() {
   }, [mirrorAngle, incidentAngle, gameState.started]);
 
 
-  // --- Effect 2: Game Logic Check (Debounced) ---
+  // --- Logic Check ---
   useEffect(() => {
     if (!simulation || gameState.challenge === 7) return;
 
@@ -164,6 +166,7 @@ export default function App() {
               jewels: prev.jewels + 1
             }));
             setWizardText(WIZARD_MESSAGES.c4_start);
+            setQuizTriggered(false); // Reset quiz state for next challenge
             triggerToast("Part 1 Complete! Now Observe... 👁️");
           }
         }
@@ -175,8 +178,8 @@ export default function App() {
           // Check if they moved the light source significantly
           const startAngle = gameState.c4StartAngle ?? incidentAngle;
           const diff = Math.abs(incidentAngle - startAngle);
-          if (diff > 20 && !showQuiz) {
-            setShowQuiz(true);
+          if (diff > 20 && !quizTriggered) {
+            setQuizTriggered(true); // Trigger Quiz 1
           }
         }
       } else if (gameState.challenge === 5) {
@@ -195,8 +198,8 @@ export default function App() {
             const startIncident = gameState.c5StartAngle ?? incidentAngle;
             const diff = Math.abs(incidentAngle - startIncident);
 
-            if (diff > 20 && !showQuiz) {
-              setShowQuiz(true); // Trigger Quiz 2
+            if (diff > 20 && !quizTriggered) {
+              setQuizTriggered(true); // Trigger Quiz 2
             }
           }
         }
@@ -205,10 +208,10 @@ export default function App() {
     }, 500); // Reasonably fast debounce
 
     return () => clearTimeout(timer);
-  }, [simulation, gameState.challenge, gameState.c1Progress, incidentAngle, setGameState, setWizardText, mirrorAngle, showQuiz, gameState.c5MirrorAngle, gameState.c5StartAngle, gameState.c4StartAngle]);
+  }, [simulation, gameState.challenge, gameState.c1Progress, incidentAngle, setGameState, setWizardText, mirrorAngle, quizTriggered, gameState.c5MirrorAngle, gameState.c5StartAngle, gameState.c4StartAngle]);
 
   const handleQuizAnswer = (answerIndex: number) => {
-    setShowQuiz(false);
+    setQuizTriggered(false); // Hide quiz after answer
 
     if (gameState.challenge === 4) { // Quiz 1: Constancy Check
       const isCorrect = answerIndex === 0; // 0 = No (Correct), 1 = Yes
@@ -224,11 +227,6 @@ export default function App() {
         triggerToast("Incorrect. Watch the deviation value closely!");
       }
     } else if (gameState.challenge === 5) { // Quiz 2: General Theory triggered from C5
-      // Wait, the state doesn't switch to 6 until quiz is triggered? 
-      // Actually, let's switch state to 6 WHEN showing quiz to avoid re-triggering loop
-      // But here we are handling the answer while still in state 5 (visually). 
-      // Let's assume the component renders based on current challenge state.
-
       // Quiz 2 Logic
       // Options: 0: Incident, 1: Mirror (Correct), 2: Both
       const isCorrect = answerIndex === 1;
@@ -252,27 +250,6 @@ export default function App() {
     setTimeout(() => setShowToast(null), 3000);
   };
 
-  // --- Effect 3: Auto-Show Goal on Level Start ---
-  useEffect(() => {
-    if (gameState.started && gameState.challenge !== 7) {
-      // Delay: 3.2s if leveling up (wait for toast), 0.5s if just starting
-      const delay = gameState.challenge === 1 ? 500 : 3200;
-
-      const showTimer = setTimeout(() => {
-        setShowGoal(true);
-      }, delay);
-
-      const hideTimer = setTimeout(() => {
-        setShowGoal(false);
-      }, delay + 8000); // Hide 8s after showing
-
-      return () => {
-        clearTimeout(showTimer);
-        clearTimeout(hideTimer);
-      };
-    }
-  }, [gameState.started, gameState.challenge]);
-
   const startGame = () => {
     setGameState(prev => ({ ...prev, started: true }));
     setWizardText(WIZARD_MESSAGES.c1_start);
@@ -288,189 +265,69 @@ export default function App() {
       c1Progress: { methodA: false, methodB: false },
     });
     setWizardText(WIZARD_MESSAGES.intro);
+    setQuizTriggered(false);
+  };
+
+  // --- Dialogue Props Preparation ---
+  const dialogueProps = {
+    started: gameState.started,
+    type: (gameState.challenge === 7 ? 'VICTORY' : (quizTriggered ? 'QUIZ' : 'INFO')) as 'INTRO' | 'INFO' | 'QUIZ' | 'VICTORY',
+    text: quizTriggered
+      ? (gameState.challenge === 4 ? WIZARD_MESSAGES.c4_quiz : WIZARD_MESSAGES.c5_quiz)
+      : wizardText,
+    onStart: startGame,
+    onQuizAnswer: handleQuizAnswer,
+    quizOptions: quizTriggered
+      ? (gameState.challenge === 4
+        ? [{ label: "No, it stays 180°", value: 0 }, { label: "Yes, it changes", value: 1 }]
+        : [{ label: "Incident Angle Only", value: 0 }, { label: "Mirror Angle Only", value: 1 }, { label: "Both Angles", value: 2 }]
+      )
+      : undefined,
+    extraContent: (
+      <>
+        {gameState.challenge === 1 && (
+          <div className="flex flex-col gap-2 text-xs font-bold mt-2">
+            <div className={`flex items - center gap - 2 ${gameState.c1Progress.methodA ? 'text-green-400' : 'text-slate-500'} `}>
+              {gameState.c1Progress.methodA ? <CheckCircle2 size={12} /> : <div className="w-3 h-3 rounded-full border border-current" />}
+              Path Away
+            </div>
+            <div className={`flex items - center gap - 2 ${gameState.c1Progress.methodB ? 'text-green-400' : 'text-slate-500'} `}>
+              {gameState.c1Progress.methodB ? <CheckCircle2 size={12} /> : <div className="w-3 h-3 rounded-full border border-current" />}
+              Open Door
+            </div>
+          </div>
+        )}
+        {gameState.challenge === 7 && (
+          <button onClick={resetGame} className="mt-4 px-4 py-2 bg-yellow-600 text-white rounded-full font-bold flex items-center gap-2 hover:bg-yellow-500 transition-colors">
+            <RotateCcw size={16} /> Play Again
+          </button>
+        )}
+      </>
+    )
   };
 
   return (
     <div className="flex flex-col h-screen bg-slate-900 text-white overflow-hidden font-sans">
 
-      {/* --- Game HUD --- */}
+      {/* --- Game HUD (Jewels Only) --- */}
       {gameState.started && (
-        <div className="absolute top-4 right-4 z-30 pointer-events-none flex flex-col items-end gap-2">
-
-          {/* Goal Button & Jewels (Compact) */}
-          <div className="flex items-center gap-2 pointer-events-auto">
-            <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-full px-3 py-1 flex items-center gap-2">
-              <Gem className="text-cyan-400 w-4 h-4 fill-cyan-400/20" />
-              <span className="font-bold font-mono text-lg">{gameState.jewels}</span>
-            </div>
-
-            <button
-              onClick={() => setShowGoal(!showGoal)}
-              className={`px-3 py-1 rounded-full border transition-all duration-300 shadow-lg ${showGoal ? 'bg-purple-600 border-purple-400 text-white' : 'bg-slate-900/80 border-purple-500/50 text-purple-400 hover:bg-slate-800'}`}
-            >
-              {showGoal ? "Close" : "Goal"}
-            </button>
-          </div>
-
-          {/* Goal/Wizard Content (Toggled) */}
-          {showGoal && (
-            <div className="bg-slate-900/90 backdrop-blur-md border border-purple-500/30 rounded-2xl p-4 shadow-xl shadow-purple-900/20 w-64 md:w-80 pointer-events-auto animate-in slide-in-from-right fade-in duration-200 origin-top-right">
-              <div className="flex items-start gap-3">
-                <div className="text-2xl pt-1">🧙‍♂️</div>
-                <p className="text-purple-200 text-sm leading-tight flex-1">
-                  {wizardText}
-                </p>
-              </div>
-
-              {/* Objective Tracker */}
-              {gameState.challenge === 1 && (
-                <div className="mt-3 flex flex-col gap-2 text-xs font-bold">
-                  <div className={`px-2 py-1 rounded-full border flex items-center gap-2 transition-colors ${gameState.c1Progress.methodA ? 'bg-green-900/50 border-green-500 text-green-400' : 'bg-slate-800/50 border-slate-700 text-slate-500'}`}>
-                    {gameState.c1Progress.methodA ? <CheckCircle2 size={12} /> : <div className="w-3 h-3 rounded-full border border-current" />}
-                    Path Away
-                  </div>
-                  <div className={`px-2 py-1 rounded-full border flex items-center gap-2 transition-colors ${gameState.c1Progress.methodB ? 'bg-green-900/50 border-green-500 text-green-400' : 'bg-slate-800/50 border-slate-700 text-slate-500'}`}>
-                    {gameState.c1Progress.methodB ? <CheckCircle2 size={12} /> : <div className="w-3 h-3 rounded-full border border-current" />}
-                    Open Door
-                  </div>
-                </div>
-              )}
-
-              {gameState.challenge === 2 && (
-                <div className="mt-3 px-3 py-1 rounded-full border bg-slate-800/50 border-yellow-500/50 text-yellow-400 text-xs font-bold animate-pulse text-center">
-                  Goal: Exactly 2 Reflections
-                </div>
-              )}
-
-              {gameState.challenge === 3 && (
-                <div className="mt-3 px-3 py-1 rounded-full border bg-slate-800/50 border-cyan-500/50 text-cyan-400 text-xs font-bold animate-pulse text-center">
-                  Goal: Parallel Output (2 Reflections)
-                </div>
-              )}
-
-              {gameState.challenge === 4 && (
-                <div className="mt-3 px-3 py-1 rounded-full border bg-slate-800/50 border-green-500/50 text-green-400 text-xs font-bold animate-pulse text-center">
-                  Goal: Move Light, Keep 90°
-                </div>
-              )}
-
-              {gameState.challenge === 5 && (
-                <div className="mt-3 px-3 py-1 rounded-full border bg-slate-800/50 border-blue-500/50 text-blue-400 text-xs font-bold animate-pulse text-center">
-                  Goal: Test 60° mirror & move light
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Completion Banner */}
-          {gameState.challenge === 7 && (
-            <div className="mt-2 bg-gradient-to-r from-yellow-600 to-yellow-800 text-white px-4 py-2 rounded-full font-bold shadow-xl flex items-center gap-2 animate-in slide-in-from-top fade-in duration-700 pointer-events-auto">
-              <Gem className="fill-white w-4 h-4" />
-              <span className="text-sm">All Jewels!</span>
-              <button onClick={resetGame} className="ml-auto p-1 bg-white/20 rounded-full hover:bg-white/30" title="Restart">
-                <RotateCcw size={14} />
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* --- Quiz Modal --- */}
-      {showQuiz && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-purple-500/50 rounded-2xl p-6 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="text-4xl mb-4 text-center">🤔</div>
-            <h3 className="text-xl font-bold text-white mb-2 text-center">Observation Check</h3>
-            {gameState.challenge === 4 ? (
-              <>
-                <p className="text-slate-300 mb-6 text-center">
-                  You changed the incident angle while keeping the mirrors at 90°.
-                  <br />
-                  <span className="text-cyan-400 font-bold">Does the deviation angle change?</span>
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-slate-300 mb-6 text-center">
-                  You tested 90° and 60°. In a 2-reflection system, the total deviation depends on:
-                </p>
-              </>
-            )}
-            {gameState.challenge === 4 ? (
-              <div className="flex gap-4">
-                <button
-                  onClick={() => handleQuizAnswer(1)}
-                  className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl font-bold text-slate-200 transition-colors"
-                >
-                  Yes, it changes
-                </button>
-                <button
-                  onClick={() => handleQuizAnswer(0)}
-                  className="flex-1 py-3 bg-purple-600 hover:bg-purple-500 rounded-xl font-bold text-white transition-colors shadow-lg shadow-purple-900/40"
-                >
-                  No, it stays 180°
-                </button>
-              </div>
-            ) : (
-              // Default or other quiz content if challenge is not 4
-              // For now, we'll keep the existing Quiz 2 buttons here if challenge is 5
-              <div className="flex gap-4">
-                <button
-                  onClick={() => handleQuizAnswer(0)} // Assuming this is for Quiz 2, where 1 is correct
-                  className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl font-bold text-slate-200 transition-colors"
-                >
-                  Incident Angle
-                </button>
-                <button
-                  onClick={() => handleQuizAnswer(1)} // Correct for Quiz 2
-                  className="flex-1 py-3 bg-purple-600 hover:bg-purple-500 rounded-xl font-bold text-white transition-colors shadow-lg shadow-purple-900/40"
-                >
-                  Mirror Angle
-                </button>
-                <button
-                  onClick={() => handleQuizAnswer(2)}
-                  className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl font-bold text-slate-200 transition-colors"
-                >
-                  Both
-                </button>
-              </div>
-            )}
+        <div className="absolute top-4 right-4 z-30 flex items-center gap-2">
+          <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-full px-3 py-1 flex items-center gap-2">
+            <Gem className="text-cyan-400 w-4 h-4 fill-cyan-400/20" />
+            <span className="font-bold font-mono text-lg">{gameState.jewels}</span>
           </div>
         </div>
       )}
+
+      {/* --- Unified Dialogue Panel --- */}
+      <DialoguePanel {...dialogueProps} />
 
       {/* --- Toast Notification --- */}
       {showToast && (
-        <div className="absolute top-32 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 zoom-in-95 duration-300">
-          <div className="bg-cyan-500 text-slate-900 px-6 py-3 rounded-full shadow-[0_0_20px_rgba(34,211,238,0.5)] font-bold flex items-center gap-2">
+        <div className="absolute top-32 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 zoom-in-95 duration-300 pointer-events-none">
+          <div className="bg-cyan-500 text-slate-900 px-6 py-3 rounded-full shadow-[0_0_20px_rgba(34,211,238,0.5)] font-bold flex items-center gap-2 pointer-events-auto">
             <Gem size={20} className="fill-slate-900" />
             {showToast}
-          </div>
-        </div>
-      )}
-
-      {/* --- Intro Modal --- */}
-      {!gameState.started && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-purple-500/50 rounded-2xl p-8 max-w-md w-full shadow-2xl shadow-purple-900/50 text-center relative overflow-hidden">
-            {/* Decorative background glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-32 bg-purple-600/20 blur-3xl -z-10"></div>
-
-            <div className="text-6xl mb-6">🧙‍♂️</div>
-            <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400 mb-4">
-              World of Two Mirrors
-            </h1>
-            <p className="text-slate-300 mb-8 leading-relaxed">
-              {WIZARD_MESSAGES.intro}
-            </p>
-
-            <button
-              onClick={startGame}
-              className="group relative inline-flex items-center justify-center px-8 py-3 font-bold text-white transition-all duration-200 bg-purple-600 font-lg rounded-full hover:bg-purple-500 hover:shadow-[0_0_20px_rgba(147,51,234,0.5)] active:scale-95"
-            >
-              <span className="mr-2">Start Journey</span>
-              <Play size={20} className="fill-current" />
-            </button>
           </div>
         </div>
       )}
