@@ -6,7 +6,7 @@ import { Mirror } from './types';
 import { Gem, Play, CheckCircle2, RotateCcw, Target, X } from 'lucide-react';
 
 // --- Game Constants & Types ---
-type ChallengeId = 1 | 2 | 3 | 4; // 1: One Refl, 2: Two Refl, 3: Retro-Refl, 4: Done
+type ChallengeId = 1 | 2 | 3 | 4 | 5; // 1: One Refl, 2: Two Refl, 3: Retro-Refl, 4: Constancy Check, 5: Done
 
 interface GameState {
   started: boolean;
@@ -16,6 +16,7 @@ interface GameState {
     methodA: boolean; // Angle of light > 90 (Left of normal)
     methodB: boolean; // Mirror Angle > Light Angle (Escaping)
   };
+  c4StartAngle?: number; // Snapshot of incident angle when C4 starts
 }
 
 const WIZARD_MESSAGES = {
@@ -23,8 +24,9 @@ const WIZARD_MESSAGES = {
   c1_start: "Your first challenge: Tame the light to bounce exactly ONCE. There are TWO distinct ways to do this. Find them both!",
   c1_progress: "Brilliant! You found one way. Now, find the other path to single reflection.",
   c2_start: "Excellent work! Now, bend the light to bounce exactly TWICE.",
-  c3_start: "You are a master! Final challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray (ie deviation = 180°) after exactly 2 reflections.",
-  complete: "Magnificent! A 90-degree corner reflects light back parallel to its source. You have claimed all the jewels!",
+  c3_start: "You are a master! Final challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray after exactly 2 reflections.",
+  c4_start: "Remarkable! You found the 90° corner. Now, KEEP the mirror at 90° and CHANGE the light source angle. Observe what happens to the deviation.",
+  complete: "Magnificent! A 90-degree corner reflects light back parallel to its source regardless of the incoming angle. You have claimed all the jewels!",
 };
 
 export default function App() {
@@ -81,10 +83,11 @@ export default function App() {
   }, [mirrorAngle, incidentAngle, gameState.started]);
 
 
+  const [showQuiz, setShowQuiz] = useState(false);
 
   // --- Effect 2: Game Logic Check (Debounced) ---
   useEffect(() => {
-    if (!simulation || gameState.challenge === 4) return;
+    if (!simulation || gameState.challenge === 5) return;
 
     const timer = setTimeout(() => {
       const { reflectionCount, path, rayDirVector } = simulation;
@@ -156,17 +159,46 @@ export default function App() {
             setGameState(prev => ({
               ...prev,
               challenge: 4,
+              c4StartAngle: incidentAngle, // Store snapshot
               jewels: prev.jewels + 1
             }));
-            setWizardText(WIZARD_MESSAGES.complete);
-            triggerToast("Grand Master! +1 Jewel 💎");
+            setWizardText(WIZARD_MESSAGES.c4_start);
+            triggerToast("Part 1 Complete! Now Observe... 👁️");
+          }
+        }
+      } else if (gameState.challenge === 4) {
+        // Enforce staying at 90 degrees
+        if (Math.round(mirrorAngle) !== 90) {
+          // User moved mirror away from 90, do nothing or reset?
+          // For now, let them explore. Logic will pick up again if they return to 90.
+        } else {
+          // Check if they moved the light source significantly
+          const startAngle = gameState.c4StartAngle ?? incidentAngle;
+          const diff = Math.abs(incidentAngle - startAngle);
+          if (diff > 20 && !showQuiz) {
+            setShowQuiz(true); // Trigger the quiz instead of instant win
           }
         }
       }
     }, 500); // Debounce delay
 
     return () => clearTimeout(timer);
-  }, [simulation, gameState.challenge, gameState.c1Progress, incidentAngle, setGameState, setWizardText]);
+  }, [simulation, gameState.challenge, gameState.c1Progress, incidentAngle, setGameState, setWizardText, mirrorAngle, showQuiz]);
+
+  const handleQuizAnswer = (isCorrect: boolean) => {
+    setShowQuiz(false);
+    if (isCorrect) {
+      setGameState(prev => ({
+        ...prev,
+        challenge: 5,
+        jewels: prev.jewels + 1
+      }));
+      setWizardText(WIZARD_MESSAGES.complete);
+      triggerToast("Correct! +1 Jewel 💎");
+    } else {
+      triggerToast("Incorrect. Watch the deviation value closely!");
+    }
+  };
 
   const triggerToast = (msg: string) => {
     setShowToast(msg);
@@ -175,7 +207,7 @@ export default function App() {
 
   // --- Effect 3: Auto-Show Goal on Level Start ---
   useEffect(() => {
-    if (gameState.started && gameState.challenge !== 4) {
+    if (gameState.started && gameState.challenge !== 5) {
       // Delay: 3.2s if leveling up (wait for toast), 0.5s if just starting
       const delay = gameState.challenge === 1 ? 500 : 3200;
 
@@ -268,11 +300,17 @@ export default function App() {
                   Goal: Parallel Output (2 Reflections)
                 </div>
               )}
+
+              {gameState.challenge === 4 && (
+                <div className="mt-3 px-3 py-1 rounded-full border bg-slate-800/50 border-green-500/50 text-green-400 text-xs font-bold animate-pulse text-center">
+                  Goal: Move Light, Keep 90°
+                </div>
+              )}
             </div>
           )}
 
           {/* Completion Banner */}
-          {gameState.challenge === 4 && (
+          {gameState.challenge === 5 && (
             <div className="mt-2 bg-gradient-to-r from-yellow-600 to-yellow-800 text-white px-4 py-2 rounded-full font-bold shadow-xl flex items-center gap-2 animate-in slide-in-from-top fade-in duration-700 pointer-events-auto">
               <Gem className="fill-white w-4 h-4" />
               <span className="text-sm">All Jewels!</span>
@@ -281,6 +319,35 @@ export default function App() {
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* --- Quiz Modal --- */}
+      {showQuiz && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-purple-500/50 rounded-2xl p-6 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="text-4xl mb-4 text-center">🤔</div>
+            <h3 className="text-xl font-bold text-white mb-2 text-center">Observation Check</h3>
+            <p className="text-slate-300 mb-6 text-center">
+              You changed the incident angle while keeping the mirrors at 90°.
+              <br />
+              <span className="text-cyan-400 font-bold">Does the deviation angle change?</span>
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => handleQuizAnswer(false)}
+                className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl font-bold text-slate-200 transition-colors"
+              >
+                Yes, it changes
+              </button>
+              <button
+                onClick={() => handleQuizAnswer(true)}
+                className="flex-1 py-3 bg-purple-600 hover:bg-purple-500 rounded-xl font-bold text-white transition-colors shadow-lg shadow-purple-900/40"
+              >
+                No, it stays 180°
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
