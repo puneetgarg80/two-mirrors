@@ -23,7 +23,7 @@ const WIZARD_MESSAGES = {
   c1_start: "Your first challenge: Tame the light to bounce exactly ONCE. There are TWO distinct ways to do this. Find them both!",
   c1_progress: "Brilliant! You found one way. Now, find the other path to single reflection.",
   c2_start: "Excellent work! Now, bend the light to bounce exactly TWICE.",
-  c3_start: "You are a master! Final challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray after exactly 2 reflections.",
+  c3_start: "You are a master! Final challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray (ie deviation = 180°) after exactly 2 reflections.",
   complete: "Magnificent! A 90-degree corner reflects light back parallel to its source. You have claimed all the jewels!",
 };
 
@@ -152,7 +152,7 @@ export default function App() {
 
           const dot = nxInit * nxFinal + nyInit * nyFinal;
 
-          if (dot < -0.99) {
+          if (dot < -0.99 && Math.round(mirrorAngle) === 90) {
             setGameState(prev => ({
               ...prev,
               challenge: 4,
