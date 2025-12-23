@@ -6,7 +6,7 @@ import { Mirror } from './types';
 import { Gem, Play, CheckCircle2, RotateCcw, Target, X } from 'lucide-react';
 
 // --- Game Constants & Types ---
-type ChallengeId = 1 | 2 | 3 | 4 | 5; // 1: One Refl, 2: Two Refl, 3: Retro-Refl, 4: Constancy Check, 5: Done
+type ChallengeId = 1 | 2 | 3 | 4 | 5 | 6 | 7; // ... 4: Constancy Check, 5: Test Other Angles, 6: Theory Quiz, 7: Done
 
 interface GameState {
   started: boolean;
@@ -16,7 +16,9 @@ interface GameState {
     methodA: boolean; // Angle of light > 90 (Left of normal)
     methodB: boolean; // Mirror Angle > Light Angle (Escaping)
   };
-  c4StartAngle?: number; // Snapshot of incident angle when C4 starts
+  c4StartAngle?: number; // Snapshot of incident for C4
+  c5StartAngle?: number; // Snapshot of incident for C5
+  c5MirrorAngle?: number; // Snapshot of mirror for C5
 }
 
 const WIZARD_MESSAGES = {
@@ -26,7 +28,8 @@ const WIZARD_MESSAGES = {
   c2_start: "Excellent work! Now, bend the light to bounce exactly TWICE.",
   c3_start: "You are a master! Final challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray after exactly 2 reflections.",
   c4_start: "Remarkable! You found the 90° corner. Now, KEEP the mirror at 90° and CHANGE the light source angle. Observe what happens to the deviation.",
-  complete: "Magnificent! A 90-degree corner reflects light back parallel to its source regardless of the incoming angle. You have claimed all the jewels!",
+  c5_start: "Interesting... the deviation stayed constant at 180°. Does this rule hold for OTHER angles? Set the mirror to roughly 60°. Then move the light to check constancy.",
+  complete: "Magnificent! You have discovered the General Law: For 2 reflections, Total Deviation depends ONLY on the Mirror Angle (D = 360 - 2θ). You are a true Optic Master!",
 };
 
 export default function App() {
@@ -45,6 +48,7 @@ export default function App() {
   const [wizardText, setWizardText] = useState(WIZARD_MESSAGES.intro);
   const [showToast, setShowToast] = useState<string | null>(null);
   const [showGoal, setShowGoal] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
 
   // --- Physics Simulation (Memoized) ---
   const simulation = useMemo(() => {
@@ -83,11 +87,9 @@ export default function App() {
   }, [mirrorAngle, incidentAngle, gameState.started]);
 
 
-  const [showQuiz, setShowQuiz] = useState(false);
-
   // --- Effect 2: Game Logic Check (Debounced) ---
   useEffect(() => {
-    if (!simulation || gameState.challenge === 5) return;
+    if (!simulation || gameState.challenge === 7) return;
 
     const timer = setTimeout(() => {
       const { reflectionCount, path, rayDirVector } = simulation;
@@ -149,9 +151,8 @@ export default function App() {
           const nxInit = rayDirVector.x / lenInit;
           const nyInit = rayDirVector.y / lenInit;
 
-          const lenFinal = Math.sqrt(lastDx ** 2 + lastDy ** 2);
-          const nxFinal = lastDx / lenFinal;
-          const nyFinal = lastDy / lenFinal;
+          const nxFinal = lastDx / Math.sqrt(lastDx ** 2 + lastDy ** 2);
+          const nyFinal = lastDy / Math.sqrt(lastDx ** 2 + lastDy ** 2);
 
           const dot = nxInit * nxFinal + nyInit * nyFinal;
 
@@ -169,34 +170,80 @@ export default function App() {
       } else if (gameState.challenge === 4) {
         // Enforce staying at 90 degrees
         if (Math.round(mirrorAngle) !== 90) {
-          // User moved mirror away from 90, do nothing or reset?
-          // For now, let them explore. Logic will pick up again if they return to 90.
+          // User moved mirror away from 90.
         } else {
           // Check if they moved the light source significantly
           const startAngle = gameState.c4StartAngle ?? incidentAngle;
           const diff = Math.abs(incidentAngle - startAngle);
           if (diff > 20 && !showQuiz) {
-            setShowQuiz(true); // Trigger the quiz instead of instant win
+            setShowQuiz(true);
+          }
+        }
+      } else if (gameState.challenge === 5) {
+        // Goal: Set mirror to ~60 (+/- 5), then move source
+        const targetAngle = 60;
+        if (Math.abs(mirrorAngle - targetAngle) <= 5) {
+          // They are in the target range.
+          // Have they moved the source while IN this range?
+
+          // Correct initialization of tracking state if not set or if mirror moved significantly
+          if (gameState.c5MirrorAngle === undefined || Math.abs(gameState.c5MirrorAngle - mirrorAngle) > 2) {
+            // Reset baseline if mirror changed
+            setGameState(prev => ({ ...prev, c5MirrorAngle: mirrorAngle, c5StartAngle: incidentAngle }));
+          } else {
+            // Check Source Movement
+            const startIncident = gameState.c5StartAngle ?? incidentAngle;
+            const diff = Math.abs(incidentAngle - startIncident);
+
+            if (diff > 20 && !showQuiz) {
+              setShowQuiz(true); // Trigger Quiz 2
+            }
           }
         }
       }
-    }, 500); // Debounce delay
+      // Challenge 6 is the Quiz state itself
+    }, 500); // Reasonably fast debounce
 
     return () => clearTimeout(timer);
-  }, [simulation, gameState.challenge, gameState.c1Progress, incidentAngle, setGameState, setWizardText, mirrorAngle, showQuiz]);
+  }, [simulation, gameState.challenge, gameState.c1Progress, incidentAngle, setGameState, setWizardText, mirrorAngle, showQuiz, gameState.c5MirrorAngle, gameState.c5StartAngle, gameState.c4StartAngle]);
 
-  const handleQuizAnswer = (isCorrect: boolean) => {
+  const handleQuizAnswer = (answerIndex: number) => {
     setShowQuiz(false);
-    if (isCorrect) {
-      setGameState(prev => ({
-        ...prev,
-        challenge: 5,
-        jewels: prev.jewels + 1
-      }));
-      setWizardText(WIZARD_MESSAGES.complete);
-      triggerToast("Correct! +1 Jewel 💎");
-    } else {
-      triggerToast("Incorrect. Watch the deviation value closely!");
+
+    if (gameState.challenge === 4) { // Quiz 1: Constancy Check
+      const isCorrect = answerIndex === 0; // 0 = No (Correct), 1 = Yes
+      if (isCorrect) {
+        setGameState(prev => ({
+          ...prev,
+          challenge: 5,
+          jewels: prev.jewels + 1
+        }));
+        setWizardText(WIZARD_MESSAGES.c5_start);
+        triggerToast("Correct! Next: The General Case 🤔");
+      } else {
+        triggerToast("Incorrect. Watch the deviation value closely!");
+      }
+    } else if (gameState.challenge === 5) { // Quiz 2: General Theory triggered from C5
+      // Wait, the state doesn't switch to 6 until quiz is triggered? 
+      // Actually, let's switch state to 6 WHEN showing quiz to avoid re-triggering loop
+      // But here we are handling the answer while still in state 5 (visually). 
+      // Let's assume the component renders based on current challenge state.
+
+      // Quiz 2 Logic
+      // Options: 0: Incident, 1: Mirror (Correct), 2: Both
+      const isCorrect = answerIndex === 1;
+
+      if (isCorrect) {
+        setGameState(prev => ({
+          ...prev,
+          challenge: 7,
+          jewels: prev.jewels + 1
+        }));
+        setWizardText(WIZARD_MESSAGES.complete);
+        triggerToast("Grand Master! +1 Jewel 💎");
+      } else {
+        triggerToast("Incorrect. Think about what truly changed the deviation.");
+      }
     }
   };
 
@@ -207,7 +254,7 @@ export default function App() {
 
   // --- Effect 3: Auto-Show Goal on Level Start ---
   useEffect(() => {
-    if (gameState.started && gameState.challenge !== 5) {
+    if (gameState.started && gameState.challenge !== 7) {
       // Delay: 3.2s if leveling up (wait for toast), 0.5s if just starting
       const delay = gameState.challenge === 1 ? 500 : 3200;
 
@@ -306,11 +353,17 @@ export default function App() {
                   Goal: Move Light, Keep 90°
                 </div>
               )}
+
+              {gameState.challenge === 5 && (
+                <div className="mt-3 px-3 py-1 rounded-full border bg-slate-800/50 border-blue-500/50 text-blue-400 text-xs font-bold animate-pulse text-center">
+                  Goal: Test 60° mirror & move light
+                </div>
+              )}
             </div>
           )}
 
           {/* Completion Banner */}
-          {gameState.challenge === 5 && (
+          {gameState.challenge === 7 && (
             <div className="mt-2 bg-gradient-to-r from-yellow-600 to-yellow-800 text-white px-4 py-2 rounded-full font-bold shadow-xl flex items-center gap-2 animate-in slide-in-from-top fade-in duration-700 pointer-events-auto">
               <Gem className="fill-white w-4 h-4" />
               <span className="text-sm">All Jewels!</span>
@@ -328,25 +381,60 @@ export default function App() {
           <div className="bg-slate-900 border border-purple-500/50 rounded-2xl p-6 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="text-4xl mb-4 text-center">🤔</div>
             <h3 className="text-xl font-bold text-white mb-2 text-center">Observation Check</h3>
-            <p className="text-slate-300 mb-6 text-center">
-              You changed the incident angle while keeping the mirrors at 90°.
-              <br />
-              <span className="text-cyan-400 font-bold">Does the deviation angle change?</span>
-            </p>
-            <div className="flex gap-4">
-              <button
-                onClick={() => handleQuizAnswer(false)}
-                className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl font-bold text-slate-200 transition-colors"
-              >
-                Yes, it changes
-              </button>
-              <button
-                onClick={() => handleQuizAnswer(true)}
-                className="flex-1 py-3 bg-purple-600 hover:bg-purple-500 rounded-xl font-bold text-white transition-colors shadow-lg shadow-purple-900/40"
-              >
-                No, it stays 180°
-              </button>
-            </div>
+            {gameState.challenge === 4 ? (
+              <>
+                <p className="text-slate-300 mb-6 text-center">
+                  You changed the incident angle while keeping the mirrors at 90°.
+                  <br />
+                  <span className="text-cyan-400 font-bold">Does the deviation angle change?</span>
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-slate-300 mb-6 text-center">
+                  You tested 90° and 60°. In a 2-reflection system, the total deviation depends on:
+                </p>
+              </>
+            )}
+            {gameState.challenge === 4 ? (
+              <div className="flex gap-4">
+                <button
+                  onClick={() => handleQuizAnswer(1)}
+                  className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl font-bold text-slate-200 transition-colors"
+                >
+                  Yes, it changes
+                </button>
+                <button
+                  onClick={() => handleQuizAnswer(0)}
+                  className="flex-1 py-3 bg-purple-600 hover:bg-purple-500 rounded-xl font-bold text-white transition-colors shadow-lg shadow-purple-900/40"
+                >
+                  No, it stays 180°
+                </button>
+              </div>
+            ) : (
+              // Default or other quiz content if challenge is not 4
+              // For now, we'll keep the existing Quiz 2 buttons here if challenge is 5
+              <div className="flex gap-4">
+                <button
+                  onClick={() => handleQuizAnswer(0)} // Assuming this is for Quiz 2, where 1 is correct
+                  className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl font-bold text-slate-200 transition-colors"
+                >
+                  Incident Angle
+                </button>
+                <button
+                  onClick={() => handleQuizAnswer(1)} // Correct for Quiz 2
+                  className="flex-1 py-3 bg-purple-600 hover:bg-purple-500 rounded-xl font-bold text-white transition-colors shadow-lg shadow-purple-900/40"
+                >
+                  Mirror Angle
+                </button>
+                <button
+                  onClick={() => handleQuizAnswer(2)}
+                  className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl font-bold text-slate-200 transition-colors"
+                >
+                  Both
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
