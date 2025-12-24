@@ -63,7 +63,7 @@ export default function DialoguePanel({
             {/* Helper to toggle state if needed, though strictly we might just want it always open or smart-collapsed */}
             {/* For now, just the panel */}
 
-            <div className="bg-slate-900/95 backdrop-blur-md border border-purple-500/30 rounded-2xl p-4 shadow-2xl shadow-purple-900/20 w-full pointer-events-auto animate-in slide-in-from-bottom fade-in duration-300">
+            <div className="bg-slate-900/95 backdrop-blur-md border border-purple-500/30 rounded-2xl p-2 shadow-2xl shadow-purple-900/20 w-full pointer-events-auto animate-in slide-in-from-bottom fade-in duration-300">
                 <div className="flex gap-4">
                     <div className="flex-shrink-0">
                         <div className="w-12 h-12 rounded-full bg-purple-900/50 flex items-center justify-center border border-purple-500 text-2xl">
@@ -71,13 +71,13 @@ export default function DialoguePanel({
                         </div>
                     </div>
 
-                    <div className="flex-1 space-y-3">
+                    <div className="flex-1 space-y-1">
                         <div className="text-purple-200 text-sm md:text-base leading-relaxed font-medium">
                             {text}
                         </div>
 
                         {extraContent && (
-                            <div className="mt-2 bg-slate-800/50 rounded-lg p-2 border border-slate-700/50">
+                            <div className="mt-2 bg-slate-800/50 rounded-lg p-1 border border-slate-700/50">
                                 {extraContent}
                             </div>
                         )}
