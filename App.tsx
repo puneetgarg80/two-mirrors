@@ -27,11 +27,11 @@ const WIZARD_MESSAGES = {
   c1_start: "Your first challenge: Tame the light to bounce exactly ONCE. There are TWO distinct ways to do this. Find them both!",
   c1_progress: "Brilliant! You found one way. Now, find the other path to single reflection.",
   c2_start: "Excellent work! Now, bend the light to bounce exactly TWICE.",
-  c3_start: "You are a master! Final challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray after exactly 2 reflections.",
+  c3_start: "You are a master! Next challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray (i.e. deviation = 180°) after exactly 2 reflections.",
   c4_start: "Remarkable! You found the 90° corner. Now, KEEP the mirror at 90° and CHANGE the light source angle. Observe what happens to the deviation.",
   c4_quiz: "You changed the incident angle while keeping the mirrors at 90°. Does the deviation angle change?",
-  c5_start: "Interesting... the deviation stayed constant at 180°. Does this rule hold for OTHER angles? Set the mirror to roughly 60°. Then move the light to check constancy.",
-  c5_quiz: "You tested 90° and 60°. In a 2-reflection system, the total deviation depends on:",
+  c5_start: "Interesting... the deviation stayed constant at 180°. Does this rule hold for OTHER angles? Set the mirror to roughly 110°. Then move the light to check constancy.",
+  c5_quiz: "You tested 90° and 110°. In a 2-reflection system, the total deviation depends on:",
   complete: "Magnificent! You have discovered the General Law: For 2 reflections, Total Deviation depends ONLY on the Mirror Angle (D = 360 - 2θ). You are a true Optic Master!",
 };
 
@@ -178,13 +178,13 @@ export default function App() {
           // Check if they moved the light source significantly
           const startAngle = gameState.c4StartAngle ?? incidentAngle;
           const diff = Math.abs(incidentAngle - startAngle);
-          if (diff > 20 && !quizTriggered) {
+          if (diff > 10 && !quizTriggered) {
             setQuizTriggered(true); // Trigger Quiz 1
           }
         }
       } else if (gameState.challenge === 5) {
         // Goal: Set mirror to ~60 (+/- 5), then move source
-        const targetAngle = 60;
+        const targetAngle = 110;
         if (Math.abs(mirrorAngle - targetAngle) <= 5) {
           // They are in the target range.
           // Have they moved the source while IN this range?
