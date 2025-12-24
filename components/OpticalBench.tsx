@@ -241,7 +241,7 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
       </div>
 
       {/* Persistent Deviation Display */}
-      <div className="absolute bottom-20 left-4 md:top-16 md:bottom-auto z-10">
+      <div className="absolute top-4 right-4 md:top-16 md:left-4 md:right-auto z-0 pointer-events-none">
         <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700 px-4 py-2 rounded-xl shadow-xl">
           <span className="text-slate-400 text-sm mr-2">Deviation:</span>
           <span className="font-mono text-cyan-400 font-bold text-lg">{Math.round(totalDeviation)}°</span>
