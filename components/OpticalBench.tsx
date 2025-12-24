@@ -245,6 +245,9 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
         <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700 px-4 py-2 rounded-xl shadow-xl">
           <span className="text-slate-400 text-sm mr-2">Deviation:</span>
           <span className="font-mono text-cyan-400 font-bold text-lg">{Math.round(totalDeviation)}°</span>
+          <br />
+          <span className="text-slate-400 text-sm mr-2">Reflections:</span>
+          <span className="font-mono text-cyan-400 font-bold text-lg">{reflections.length}</span>
         </div>
       </div>
 
