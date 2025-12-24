@@ -283,15 +283,15 @@ export default function App() {
         : [{ label: "Incident Angle Only", value: 0 }, { label: "Mirror Angle Only", value: 1 }, { label: "Both Angles", value: 2 }]
       )
       : undefined,
-    extraContent: (
+    extraContent: (gameState.challenge === 1 || gameState.challenge === 7) ? (
       <>
         {gameState.challenge === 1 && (
           <div className="flex flex-col gap-1 text-xs font-bold">
-            <div className={`flex items - center gap - 2 ${gameState.c1Progress.methodA ? 'text-green-400' : 'text-slate-500'} `}>
+            <div className={`flex items-center gap-2 ${gameState.c1Progress.methodA ? 'text-green-400' : 'text-slate-500'} `}>
               {gameState.c1Progress.methodA ? <CheckCircle2 size={12} /> : <div className="w-3 h-3 rounded-full border border-current" />}
               &nbsp; Path Away
             </div>
-            <div className={`flex items - center gap - 2 ${gameState.c1Progress.methodB ? 'text-green-400' : 'text-slate-500'} `}>
+            <div className={`flex items-center gap-2 ${gameState.c1Progress.methodB ? 'text-green-400' : 'text-slate-500'} `}>
               {gameState.c1Progress.methodB ? <CheckCircle2 size={12} /> : <div className="w-3 h-3 rounded-full border border-current" />}
               &nbsp; Open Door
             </div>
@@ -303,7 +303,7 @@ export default function App() {
           </button>
         )}
       </>
-    )
+    ) : undefined
   };
 
   return (
