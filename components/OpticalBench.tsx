@@ -52,8 +52,8 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   // Use state for source distance
   // const sourceDist = handleRadius * 0.3; // Replaced by state
 
-  const centerX = 150;
-  const centerY = dimensions.height - 220;
+  const centerX = 200;
+  const centerY = dimensions.height - 350;
 
   const mapToSvg = (p: Point) => ({
     x: centerX + p.x,
@@ -169,7 +169,7 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   const svgSourcePos = mapToSvg(sourcePos);
 
   // Angle Arc Path for Mirror Angle
-  const arcRadius = handleRadius * 0.25;
+  const arcRadius = handleRadius * 0.15;
   const arcStart = { x: arcRadius, y: 0 };
   const arcEnd = {
     x: arcRadius * Math.cos(degToRad(mirrorAngle)),
@@ -321,8 +321,8 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
         {/* --- ANGLE INDICATOR --- */}
         <path d={anglePath} fill="none" stroke="#64748b" strokeWidth="2" strokeDasharray="4 4" />
         <text
-          x={svgOrigin.x + (arcRadius + 25) * Math.cos(degToRad(mirrorAngle / 2))}
-          y={svgOrigin.y - (arcRadius + 25) * Math.sin(degToRad(mirrorAngle / 2))}
+          x={svgOrigin.x + (arcRadius + 15) * Math.cos(degToRad(mirrorAngle / 2))}
+          y={svgOrigin.y - (arcRadius + 15) * Math.sin(degToRad(mirrorAngle / 2))}
           fill="#94a3b8"
           fontSize="12"
           textAnchor="middle"
