@@ -20,6 +20,16 @@ export const rotatePoint = (p: Point, center: Point, angleDeg: number): Point =>
   };
 };
 
+export const reflectPointAcrossLine = (p: Point, l1: Point, l2: Point): Point => {
+  const dx = l2.x - l1.x;
+  const dy = l2.y - l1.y;
+  const a = (dx * dx - dy * dy) / (dx * dx + dy * dy);
+  const b = (2 * dx * dy) / (dx * dx + dy * dy);
+  const x2 = a * (p.x - l1.x) + b * (p.y - l1.y) + l1.x;
+  const y2 = b * (p.x - l1.x) - a * (p.y - l1.y) + l1.y;
+  return { x: x2, y: y2 };
+};
+
 // Intersection of Ray (origin + t*dir) and Segment (p1 to p2)
 // Returns distance t if intersection exists and t > epsilon, else null
 export const intersectRaySegment = (
@@ -83,9 +93,10 @@ export const calculateRayPath = (
 ) => {
   const path: Point[] = [startPoint];
   const arrows: { pos: Point; angle: number }[] = [];
-  const reflections: { point: Point; incidentAngle: number; reflectionAngle: number; normalAngle: number }[] = [];
+  const reflections: { point: Point; incidentAngle: number; reflectionAngle: number; normalAngle: number; virtualSource: Point }[] = [];
 
   let currentOrigin = startPoint;
+  let currentVirtualSource = startPoint;
   let currentDir = {
     x: Math.cos(degToRad(startAngleDeg)),
     y: Math.sin(degToRad(startAngleDeg)),
@@ -131,11 +142,19 @@ export const calculateRayPath = (
 
       const normalAngle = radToDeg(Math.atan2(closestIntersection.normal.y, closestIntersection.normal.x));
 
+      // Calculate new Virtual Source
+      // Reflect the CURRENT virtual source across the mirror line we just hit
+      // We need the mirror start/end.
+      const hitMirror = mirrors.find(m => m.id === closestIntersection!.mirrorId)!;
+      const newVirtualSource = reflectPointAcrossLine(currentVirtualSource, hitMirror.start, hitMirror.end);
+      currentVirtualSource = newVirtualSource;
+
       reflections.push({
         point: closestIntersection.point,
         incidentAngle: angleDeg,
         reflectionAngle: angleDeg, // Law of reflection: i = r
-        normalAngle: normalAngle
+        normalAngle: normalAngle,
+        virtualSource: newVirtualSource
       });
 
       // Reflect
