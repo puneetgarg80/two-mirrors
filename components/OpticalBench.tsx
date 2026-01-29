@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
-import { Mirror, Point } from '../types';
+import { Mirror, Point, HighlightTarget } from '../types';
 import { degToRad, radToDeg, calculateRayPath } from '../utils/geometry';
 import { Info } from 'lucide-react';
 
@@ -8,6 +8,7 @@ interface OpticalBenchProps {
   setMirrorAngle: (angle: number) => void;
   incidentAngle: number;
   setIncidentAngle: (angle: number) => void;
+  highlight: HighlightTarget | null;
 }
 
 const OpticalBench: React.FC<OpticalBenchProps> = ({
@@ -15,6 +16,7 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   setMirrorAngle,
   incidentAngle,
   setIncidentAngle,
+  highlight
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -285,9 +287,11 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
           y1={svgOrigin.y}
           x2={svgM1End.x}
           y2={svgM1End.y}
-          stroke="#94a3b8"
+          stroke={highlight === 'mirrors' ? "#34d399" : "#94a3b8"}
           strokeWidth="6"
           strokeLinecap="round"
+          className={highlight === 'mirrors' ? "animate-pulse" : ""}
+          style={{ filter: highlight === 'mirrors' ? "drop-shadow(0 0 8px #34d399)" : "" }}
         />
         {/* Mirror 2 (Rotatable) */}
         <g
@@ -299,11 +303,26 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
             y1={svgOrigin.y}
             x2={svgM2End.x}
             y2={svgM2End.y}
-            stroke="#22d3ee"
+            stroke={highlight === 'mirrors' ? "#34d399" : "#22d3ee"}
             strokeWidth="6"
             strokeLinecap="round"
-            className="transition-colors hover:stroke-cyan-300"
+            className={`transition-colors hover:stroke-cyan-300 ${highlight === 'mirrors' ? "animate-pulse" : ""}`}
+            style={{ filter: highlight === 'mirrors' ? "drop-shadow(0 0 8px #34d399)" : "" }}
           />
+
+          {/* Highlight for Mirror Control Handle */}
+          {highlight === 'mirrorControl' && (
+            <circle
+              cx={svgM2Handle.x}
+              cy={svgM2Handle.y}
+              r="30"
+              fill="rgba(34, 211, 238, 0.2)"
+              stroke="#22d3ee"
+              strokeWidth="2"
+              className="animate-ping opacity-75"
+            />
+          )}
+
           {/* Mirror 2 Handle - Positioned at handleRadius, not at end of infinite mirror */}
           <circle
             cx={svgM2Handle.x}
@@ -468,7 +487,21 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
             strokeWidth="1"
             strokeDasharray="4 4"
             opacity="0.5"
+            className={highlight === 'sourceControl' ? "animate-pulse stroke-2" : ""}
           />
+
+          {(highlight === 'source' || highlight === 'sourceControl') && (
+            <circle
+              cx={svgSourcePos.x}
+              cy={svgSourcePos.y}
+              r="30"
+              fill="rgba(250, 204, 21, 0.2)"
+              stroke="#facc15"
+              strokeWidth="2"
+              className="animate-ping opacity-75"
+            />
+          )}
+
           <circle
             cx={svgSourcePos.x}
             cy={svgSourcePos.y}

@@ -25,3 +25,5 @@ export interface SimulationState {
   mirrorAngle: number; // Angle between mirrors in degrees
   incidentAngle: number; // Angle of incident ray relative to Mirror 1 (Horizontal)
 }
+
+export type HighlightTarget = 'mirrors' | 'mirrorControl' | 'source' | 'sourceControl' | 'mirrorButton' | 'sourceButton';

@@ -4,8 +4,9 @@ import { ChevronRight, Play } from 'lucide-react';
 interface DialoguePanelProps {
     started: boolean;
     text: string;
-    type: 'INTRO' | 'INFO' | 'QUIZ' | 'VICTORY';
+    type: 'INTRO' | 'INFO' | 'QUIZ' | 'VICTORY' | 'TUTORIAL';
     onStart?: () => void;
+    onNext?: () => void;
     quizOptions?: { label: string; value: any; isCorrect?: boolean }[];
     onQuizAnswer?: (index: number) => void;
     extraContent?: React.ReactNode;
@@ -18,7 +19,8 @@ export default function DialoguePanel({
     onStart,
     quizOptions,
     onQuizAnswer,
-    extraContent
+    extraContent,
+    ...props
 }: DialoguePanelProps) {
     const [isExpanded, setIsExpanded] = useState(true);
 
@@ -80,6 +82,15 @@ export default function DialoguePanel({
                             <div className="mt-2 bg-slate-800/50 rounded-lg p-1 border border-slate-700/50">
                                 {extraContent}
                             </div>
+                        )}
+
+                        {type === 'TUTORIAL' && (
+                            <button
+                                onClick={props.onNext}
+                                className="mt-3 w-full bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/50 text-purple-200 py-1.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all"
+                            >
+                                Continue <ChevronRight size={14} />
+                            </button>
                         )}
 
                         {type === 'QUIZ' && quizOptions && (

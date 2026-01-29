@@ -3,15 +3,16 @@ import OpticalBench from './components/OpticalBench';
 import ControlPanel from './components/ControlPanel';
 import DialoguePanel from './components/DialoguePanel';
 import { calculateRayPath, degToRad } from './utils/geometry';
-import { Mirror } from './types';
+import { Mirror, HighlightTarget } from './types';
 import { Gem, CheckCircle2, RotateCcw } from 'lucide-react';
 
 // --- Game Constants & Types ---
-type ChallengeId = 1 | 2 | 3 | 4 | 5 | 6 | 7; // ... 4: Constancy Check, 5: Test Other Angles, 6: Theory Quiz, 7: Done
+type ChallengeId = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7; // 0: Tutorial, ... 4: Constancy Check, 5: Test Other Angles, 6: Theory Quiz, 7: Done
 
 interface GameState {
   started: boolean;
   challenge: ChallengeId;
+  tutorialStep: number;
   jewels: number;
   c1Progress: {
     methodA: boolean; // Angle of light > 90 (Left of normal)
@@ -21,6 +22,19 @@ interface GameState {
   c5StartAngle?: number; // Snapshot of incident for C5
   c5MirrorAngle?: number; // Snapshot of mirror for C5
 }
+
+interface TutorialStep {
+  message: string;
+  highlight?: HighlightTarget;
+}
+
+const WIZARD_TUTORIAL_STEPS: TutorialStep[] = [
+  { message: "Behold! The Twin Mirrors (the green lines) are your tools of light bending.", highlight: 'mirrors' },
+  { message: "You can rotate the second mirror by dragging this blue handle.", highlight: 'mirrorControl' },
+  { message: "The Orb of Light (the yellow circle) emits the sacred ray. You can move it by dragging along its path.", highlight: 'sourceControl' },
+  { message: "Or use these panels for precise control.", highlight: 'mirrorButton' },
+  { message: "Your quest: Solve the puzzles of reflection to earn the Royal Jewels!", highlight: undefined }
+];
 
 const WIZARD_MESSAGES = {
   intro: "Welcome, seeker of light! I am the Arcane Optician. Prove your mastery over the twin mirrors to earn the Royal Jewels.",
@@ -44,6 +58,7 @@ export default function App() {
   const [gameState, setGameState] = useState<GameState>({
     started: false,
     challenge: 1,
+    tutorialStep: 0,
     jewels: 0,
     c1Progress: { methodA: false, methodB: false },
   });
@@ -51,6 +66,11 @@ export default function App() {
   const [wizardText, setWizardText] = useState(WIZARD_MESSAGES.intro);
   const [showToast, setShowToast] = useState<string | null>(null);
   const [quizTriggered, setQuizTriggered] = useState(false); // Helper to switch Dialogue to Quiz Mode
+
+  // Derive Highlight based on current tutorial step
+  const activeHighlight: HighlightTarget | null = (gameState.challenge === 0)
+    ? (WIZARD_TUTORIAL_STEPS[gameState.tutorialStep]?.highlight || null)
+    : null;
 
   // --- Physics Simulation (Memoized) ---
   const simulation = useMemo(() => {
@@ -251,8 +271,25 @@ export default function App() {
   };
 
   const startGame = () => {
-    setGameState(prev => ({ ...prev, started: true }));
-    setWizardText(WIZARD_MESSAGES.c1_start);
+    setGameState(prev => ({ ...prev, started: true, challenge: 0, tutorialStep: 0 }));
+    setWizardText(WIZARD_TUTORIAL_STEPS[0].message);
+    setMirrorAngle(50); // Ensure consistent start state
+    setIncidentAngle(60);
+  };
+
+  const handleTutorialNext = () => {
+    if (gameState.challenge !== 0) return;
+
+    const nextStep = gameState.tutorialStep + 1;
+    if (nextStep < WIZARD_TUTORIAL_STEPS.length) {
+      setGameState(prev => ({ ...prev, tutorialStep: nextStep }));
+      setWizardText(WIZARD_TUTORIAL_STEPS[nextStep].message);
+    } else {
+      // End of tutorial -> Start Challenge 1
+      setGameState(prev => ({ ...prev, challenge: 1 }));
+      setWizardText(WIZARD_MESSAGES.c1_start);
+      triggerToast("Let the Challenge Begin!");
+    }
   };
 
   const resetGame = () => {
@@ -261,6 +298,7 @@ export default function App() {
     setGameState({
       started: false,
       challenge: 1,
+      tutorialStep: 0,
       jewels: 0,
       c1Progress: { methodA: false, methodB: false },
     });
@@ -271,11 +309,12 @@ export default function App() {
   // --- Dialogue Props Preparation ---
   const dialogueProps = {
     started: gameState.started,
-    type: (gameState.challenge === 7 ? 'VICTORY' : (quizTriggered ? 'QUIZ' : 'INFO')) as 'INTRO' | 'INFO' | 'QUIZ' | 'VICTORY',
+    type: (gameState.challenge === 7 ? 'VICTORY' : (gameState.challenge === 0 ? 'TUTORIAL' : (quizTriggered ? 'QUIZ' : 'INFO'))) as 'INTRO' | 'INFO' | 'QUIZ' | 'VICTORY' | 'TUTORIAL',
     text: quizTriggered
       ? (gameState.challenge === 4 ? WIZARD_MESSAGES.c4_quiz : WIZARD_MESSAGES.c5_quiz)
       : wizardText,
     onStart: startGame,
+    onNext: handleTutorialNext,
     onQuizAnswer: handleQuizAnswer,
     quizOptions: quizTriggered
       ? (gameState.challenge === 4
@@ -338,6 +377,7 @@ export default function App() {
           setMirrorAngle={setMirrorAngle}
           incidentAngle={incidentAngle}
           setIncidentAngle={setIncidentAngle}
+          highlight={activeHighlight}
         />
       </main>
       <ControlPanel
@@ -345,6 +385,7 @@ export default function App() {
         setMirrorAngle={setMirrorAngle}
         incidentAngle={incidentAngle}
         setIncidentAngle={setIncidentAngle}
+        highlight={activeHighlight}
       />
     </div>
   );

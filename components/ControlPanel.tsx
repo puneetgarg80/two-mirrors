@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Settings2, Sun, X } from 'lucide-react';
+import { HighlightTarget } from '../types';
 
 interface ControlPanelProps {
   mirrorAngle: number;
   setMirrorAngle: (val: number) => void;
   incidentAngle: number;
   setIncidentAngle: (val: number) => void;
+  highlight: HighlightTarget | null;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -13,6 +15,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   setMirrorAngle,
   incidentAngle,
   setIncidentAngle,
+  highlight,
 }) => {
   const [activeControl, setActiveControl] = useState<'mirror' | 'source' | null>(null);
 
@@ -28,9 +31,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         <button
           onClick={() => toggleControl('mirror')}
           className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 font-medium ${activeControl === 'mirror'
-              ? 'bg-cyan-900/80 border-cyan-500 text-cyan-200 shadow-[0_0_15px_rgba(34,211,238,0.3)]'
-              : 'bg-slate-900/80 border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
+            ? 'bg-cyan-900/80 border-cyan-500 text-cyan-200 shadow-[0_0_15px_rgba(34,211,238,0.3)]'
+            : 'bg-slate-900/80 border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+            } ${highlight === 'mirrorButton' ? 'animate-bounce ring-2 ring-cyan-500 ring-offset-2 ring-offset-slate-900' : ''}`}
         >
           <Settings2 size={18} />
           <span>Mirror</span>
@@ -40,9 +43,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         <button
           onClick={() => toggleControl('source')}
           className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 font-medium ${activeControl === 'source'
-              ? 'bg-yellow-900/80 border-yellow-500 text-yellow-200 shadow-[0_0_15px_rgba(250,204,21,0.3)]'
-              : 'bg-slate-900/80 border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
+            ? 'bg-yellow-900/80 border-yellow-500 text-yellow-200 shadow-[0_0_15px_rgba(250,204,21,0.3)]'
+            : 'bg-slate-900/80 border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+            } ${highlight === 'sourceButton' || highlight === 'mirrorButton' ? 'animate-bounce delay-100 ring-2 ring-yellow-500 ring-offset-2 ring-offset-slate-900' : ''}`}
         >
           <Sun size={18} />
           <span>Source</span>
