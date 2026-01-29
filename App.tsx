@@ -24,13 +24,13 @@ interface GameState {
 
 const WIZARD_MESSAGES = {
   intro: "Welcome, seeker of light! I am the Arcane Optician. Prove your mastery over the twin mirrors to earn the Royal Jewels.",
-  c1_start: "Your first challenge: Tame the light to bounce exactly ONCE. There are TWO distinct ways to do this. Find them both!",
-  c1_progress: "Brilliant! You found one way. Now, find the other path to single reflection.",
-  c2_start: "Excellent work! Now, bend the light to bounce exactly TWICE.",
-  c3_start: "You are a master! Next challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray (i.e. deviation = 180°) after exactly 2 reflections.",
-  c4_start: "Remarkable! You found the 90° corner. Now, KEEP the mirror at 90° and CHANGE the light source angle. Observe what happens to the deviation.",
+  c1_start: "Your first challenge: Tame the light to have exactly ONE reflection. There are TWO distinct ways to do this. Find them both!",
+  c1_progress: "Brilliant! You found one way. Now, find the other path to a single reflection.",
+  c2_start: "Excellent work! Your next challenge: Bend the light to have exactly TWO reflections.",
+  c3_start: "You are a master! Your next challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray (i.e. deviation = 180°) after exactly 2 reflections.",
+  c4_start: "Remarkable! You found the 90° corner. Your next challenge: KEEP the mirror at 90° and CHANGE the light source angle. Observe what happens to the deviation.",
   c4_quiz: "You changed the incident angle while keeping the mirrors at 90°. Does the deviation angle change?",
-  c5_start: "Interesting... the deviation stayed constant at 180°. Does this rule hold for OTHER angles? Set the mirror to roughly 110°. Then move the light to check constancy.",
+  c5_start: "Interesting... the deviation stayed constant at 180°. Your next challenge: Check if this rule holds for OTHER angles. Set the mirror to roughly 110°. Then move the light to check constancy.",
   c5_quiz: "You tested 90° and 110°. In a 2-reflection system, the total deviation depends on:",
   complete: "Magnificent! You have discovered the General Law: For 2 reflections, Total Deviation depends ONLY on the Mirror Angle (D = 360 - 2θ). You are a true Optic Master!",
 };
