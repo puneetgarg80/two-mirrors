@@ -4,7 +4,7 @@ import ControlPanel from './components/ControlPanel';
 import DialoguePanel from './components/DialoguePanel';
 import { calculateRayPath, degToRad } from './utils/geometry';
 import { Mirror, HighlightTarget } from './types';
-import { Gem, CheckCircle2, RotateCcw } from 'lucide-react';
+import { Gem, CheckCircle2, RotateCcw, Star } from 'lucide-react';
 
 // --- Game Constants & Types ---
 type ChallengeId = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7; // 0: Tutorial, ... 4: Constancy Check, 5: Test Other Angles, 6: Theory Quiz, 7: Done
@@ -14,6 +14,7 @@ interface GameState {
   challenge: ChallengeId;
   tutorialStep: number;
   jewels: number;
+  points: number;
   c1Progress: {
     methodA: boolean; // Angle of light > 90 (Left of normal)
     methodB: boolean; // Mirror Angle > Light Angle (Escaping)
@@ -64,6 +65,7 @@ export default function App() {
     challenge: 1,
     tutorialStep: 0,
     jewels: 0,
+    points: 0,
     c1Progress: { methodA: false, methodB: false },
   });
 
@@ -146,6 +148,7 @@ export default function App() {
               ...prev,
               challenge: 2,
               jewels: prev.jewels + 1,
+              points: prev.points + 100,
               c1Progress: newProgress
             }));
             setWizardText(WIZARD_MESSAGES.c2_start);
@@ -161,7 +164,8 @@ export default function App() {
         setGameState(prev => ({
           ...prev,
           challenge: 3,
-          jewels: prev.jewels + 1
+          jewels: prev.jewels + 1,
+          points: prev.points + 100
         }));
         setWizardText(WIZARD_MESSAGES.c3_start);
         triggerToast("Challenge 2 Complete! +1 Jewel 💎");
@@ -187,7 +191,8 @@ export default function App() {
             ...prev,
             challenge: 4,
             c4StartAngle: incidentAngle, // Store snapshot
-            jewels: prev.jewels + 1
+            jewels: prev.jewels + 1,
+            points: prev.points + 100
           }));
           setWizardText(WIZARD_MESSAGES.c4_start);
           setQuizTriggered(false); // Reset quiz state for next challenge
@@ -240,7 +245,8 @@ export default function App() {
         setGameState(prev => ({
           ...prev,
           challenge: 5,
-          jewels: prev.jewels + 1
+          jewels: prev.jewels + 1,
+          points: prev.points + 100
         }));
         setWizardText(WIZARD_MESSAGES.c5_start);
         triggerToast("Correct! Next: The General Case 🤔");
@@ -256,7 +262,8 @@ export default function App() {
         setGameState(prev => ({
           ...prev,
           challenge: 7,
-          jewels: prev.jewels + 1
+          jewels: prev.jewels + 1,
+          points: prev.points + 100
         }));
         setWizardText(WIZARD_MESSAGES.complete);
         triggerToast("Grand Master! +1 Jewel 💎");
@@ -354,6 +361,7 @@ export default function App() {
       challenge: 1,
       tutorialStep: 0,
       jewels: 0,
+      points: 0,
       c1Progress: { methodA: false, methodB: false },
     });
     setWizardText(WIZARD_MESSAGES.intro);
@@ -396,6 +404,10 @@ export default function App() {
           <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-full px-3 py-1 flex items-center gap-2">
             <Gem className="text-cyan-400 w-4 h-4 fill-cyan-400/20" />
             <span className="font-bold font-mono text-lg">{gameState.jewels}</span>
+          </div>
+          <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700 rounded-full px-3 py-1 flex items-center gap-2">
+            <Star className="text-yellow-400 w-4 h-4 fill-yellow-400/20" />
+            <span className="font-bold font-mono text-lg">{gameState.points}</span>
           </div>
         </div>
       )}
