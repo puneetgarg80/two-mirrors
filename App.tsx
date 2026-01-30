@@ -108,7 +108,7 @@ export default function App() {
     const { path } = calculateRayPath(sourcePos, rayAngle, mirrors);
     const reflectionCount = Math.max(0, path.length - 2);
 
-    console.log('Source Position:', sourcePos, 'Distance:', sourceDist);
+    // console.log('Source Position:', sourcePos, 'Distance:', sourceDist);
 
     return { path, reflectionCount, rayDirVector, rayAngle };
   }, [mirrorAngle, incidentAngle, sourceDist, handleRadius, gameState.started]);
@@ -378,18 +378,6 @@ export default function App() {
       : undefined,
     extraContent: (gameState.challenge === 1 || gameState.challenge === 7) ? (
       <>
-        {gameState.challenge === 1 && (
-          <div className="flex flex-col gap-1 text-xs font-bold">
-            <div className={`flex items-center gap-2 ${gameState.c1Progress.methodA ? 'text-green-400' : 'text-slate-500'} `}>
-              {gameState.c1Progress.methodA ? <CheckCircle2 size={12} /> : <div className="w-3 h-3 rounded-full border border-current" />}
-              &nbsp; Method 1
-            </div>
-            <div className={`flex items-center gap-2 ${gameState.c1Progress.methodB ? 'text-green-400' : 'text-slate-500'} `}>
-              {gameState.c1Progress.methodB ? <CheckCircle2 size={12} /> : <div className="w-3 h-3 rounded-full border border-current" />}
-              &nbsp; Method 2
-            </div>
-          </div>
-        )}
         {gameState.challenge === 7 && (
           <button onClick={resetGame} className="px-2 py-1 bg-yellow-600 text-white rounded-full font-bold flex items-center gap-1 hover:bg-yellow-500 transition-colors">
             <RotateCcw size={16} /> Play Again
@@ -426,30 +414,34 @@ export default function App() {
       )}
 
       <main className="flex-1 relative bg-slate-950">
-        <OpticalBench
+        {gameState.started && (
+          <OpticalBench
+            mirrorAngle={mirrorAngle}
+            setMirrorAngle={handleSetMirrorAngle}
+            incidentAngle={incidentAngle}
+            setIncidentAngle={handleSetIncidentAngle}
+            sourceDist={sourceDist}
+            setSourceDist={handleSetSourceDist}
+            handleRadius={handleRadius}
+            setHandleRadius={setHandleRadius}
+            highlight={activeHighlight}
+            showVirtualSources={showVirtualSources}
+            onInteractionEnd={handleInteractionEnd}
+          />
+        )}
+      </main>
+      {gameState.started && (
+        <ControlPanel
           mirrorAngle={mirrorAngle}
           setMirrorAngle={handleSetMirrorAngle}
           incidentAngle={incidentAngle}
           setIncidentAngle={handleSetIncidentAngle}
-          sourceDist={sourceDist}
-          setSourceDist={handleSetSourceDist}
-          handleRadius={handleRadius}
-          setHandleRadius={setHandleRadius}
           highlight={activeHighlight}
           showVirtualSources={showVirtualSources}
+          setShowVirtualSources={setShowVirtualSources}
           onInteractionEnd={handleInteractionEnd}
         />
-      </main>
-      <ControlPanel
-        mirrorAngle={mirrorAngle}
-        setMirrorAngle={handleSetMirrorAngle}
-        incidentAngle={incidentAngle}
-        setIncidentAngle={handleSetIncidentAngle}
-        highlight={activeHighlight}
-        showVirtualSources={showVirtualSources}
-        setShowVirtualSources={setShowVirtualSources}
-        onInteractionEnd={handleInteractionEnd}
-      />
+      )}
     </div>
   );
 }

@@ -31,17 +31,19 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   onInteractionEnd
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [dimensions, setDimensions] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
+    height: typeof window !== 'undefined' ? window.innerHeight : 0
+  });
   const [dragTarget, setDragTarget] = useState<'mirror' | 'ray' | null>(null);
   const [showInfo, setShowInfo] = useState(false);
 
 
   useEffect(() => {
     const updateDim = () => {
-      if (svgRef.current) {
-        const { clientWidth, clientHeight } = svgRef.current;
-        setDimensions({ width: clientWidth, height: clientHeight });
-        // Scale default distance on resize if needed, or keep relative
+      // Since the component is fixed inset-0, use window dimensions
+      if (typeof window !== 'undefined') {
+        setDimensions({ width: window.innerWidth, height: window.innerHeight });
       }
     };
     window.addEventListener('resize', updateDim);
