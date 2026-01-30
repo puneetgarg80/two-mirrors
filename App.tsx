@@ -54,6 +54,7 @@ export default function App() {
   const [mirrorAngle, setMirrorAngle] = useState(50);
   const [incidentAngle, setIncidentAngle] = useState(60);
   const [sourceDist, setSourceDist] = useState(100 * 0.3);
+  const [handleRadius, setHandleRadius] = useState(100);
 
   // Game State
   const [gameState, setGameState] = useState<GameState>({
@@ -88,7 +89,7 @@ export default function App() {
       { start: { x: 0, y: 0 }, end: m2End, angle: mirrorAngle, id: 'm2' },
     ];
 
-    const handleRadius = 100;
+    // Handle Radius from State
     const fixedIncidentDist = handleRadius * 0.6;
     const incidentPoint = { x: fixedIncidentDist, y: 0 };
     const sourcePos = {
@@ -108,7 +109,7 @@ export default function App() {
     console.log('Source Position:', sourcePos, 'Distance:', sourceDist);
 
     return { path, reflectionCount, rayDirVector, rayAngle };
-  }, [mirrorAngle, incidentAngle, sourceDist, gameState.started]);
+  }, [mirrorAngle, incidentAngle, sourceDist, handleRadius, gameState.started]);
 
 
   // --- Logic Check (Triggered on Interaction End) ---
@@ -377,6 +378,8 @@ export default function App() {
           setIncidentAngle={setIncidentAngle}
           sourceDist={sourceDist}
           setSourceDist={setSourceDist}
+          handleRadius={handleRadius}
+          setHandleRadius={setHandleRadius}
           highlight={activeHighlight}
           onInteractionEnd={handleInteractionEnd}
         />

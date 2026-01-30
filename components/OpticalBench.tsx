@@ -10,6 +10,8 @@ interface OpticalBenchProps {
   setIncidentAngle: (angle: number) => void;
   sourceDist: number;
   setSourceDist: (dist: number) => void;
+  handleRadius: number;
+  setHandleRadius: (radius: number) => void;
   highlight: HighlightTarget | null;
   onInteractionEnd: () => void;
 }
@@ -21,6 +23,8 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   setIncidentAngle,
   sourceDist,
   setSourceDist,
+  handleRadius,
+  setHandleRadius,
   highlight,
   onInteractionEnd
 }) => {
@@ -45,12 +49,18 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
 
   // --- Dynamic Layout ---
   // Scale UI elements to fit screen, keeping hinge centered
-  const minDim = Math.min(dimensions.width, dimensions.height);
-  // Use a sensible default if dimensions are 0 (first render)
-  const baseSize = minDim > 0 ? minDim : 300;
+  useEffect(() => {
+    const minDim = Math.min(dimensions.width, dimensions.height);
+    // Use a sensible default if dimensions are 0 (first render)
+    const baseSize = minDim > 0 ? minDim : 300;
 
-  // The handle for rotating Mirror 2 stays at a reasonable distance
-  const handleRadius = Math.max(100, baseSize * 0.35);
+    // The handle for rotating Mirror 2 stays at a reasonable distance
+    const newRadius = Math.max(100, baseSize * 0.35);
+    setHandleRadius(newRadius);
+  }, [dimensions, setHandleRadius]);
+
+  // Use the prop handle radius logic for local calculations
+  // const handleRadius = ... (removed local calculation)
 
   // "Infinite" length for the mirrors themselves
   const infiniteLength = 50000;
