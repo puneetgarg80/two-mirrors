@@ -269,6 +269,59 @@ export default function App() {
     setTimeout(() => setShowToast(null), 3000);
   };
 
+  // --- Constraint Logic ---
+  const checkConstraints = (mAngle: number, iAngle: number, sDist: number) => {
+    // Constants must match simulation
+    // Using handleRadius from state for consistency
+    const fixedIncidentDist = handleRadius * 0.6;
+    const incidentPoint = { x: fixedIncidentDist, y: 0 };
+
+    // Source Position
+    const sourcePos = {
+      x: incidentPoint.x + sDist * Math.cos(degToRad(iAngle)),
+      y: incidentPoint.y + sDist * Math.sin(degToRad(iAngle)),
+    };
+
+    // Mirror 2 Vector
+    // We want Source to be "Right" of Mirror 2 (Clockwise).
+    // Mirror 2 is a ray from (0,0) at angle mAngle.
+    // CP = Mx * Sy - My * Sx
+    const mx = Math.cos(degToRad(mAngle));
+    const my = Math.sin(degToRad(mAngle));
+    const cp = mx * sourcePos.y - my * sourcePos.x;
+
+    console.log('checkConstraints:', { mAngle, iAngle, sDist, sourcePos, mx, my, cp });
+
+    const BUFFER = -15;
+
+    // Constraint 1: Right of Mirror 2
+    if (cp > BUFFER) return false;
+
+    // Constraint 2: Above Mirror 1 (y >= 0)
+    // Mirror 1 is on y=0 line. We want y to be positive (or close enough).
+    if (sourcePos.y < 15) return false; // slight buffer for touch inaccuracies
+
+    return true;
+  };
+
+  const handleSetMirrorAngle = (val: number) => {
+    if (checkConstraints(val, incidentAngle, sourceDist)) {
+      setMirrorAngle(val);
+    }
+  };
+
+  const handleSetIncidentAngle = (val: number) => {
+    if (checkConstraints(mirrorAngle, val, sourceDist)) {
+      setIncidentAngle(val);
+    }
+  };
+
+  const handleSetSourceDist = (val: number) => {
+    if (checkConstraints(mirrorAngle, incidentAngle, val)) {
+      setSourceDist(val);
+    }
+  };
+
   const startGame = () => {
     setGameState(prev => ({ ...prev, started: true, challenge: 0, tutorialStep: 0 }));
     setWizardText(WIZARD_TUTORIAL_STEPS[0].message);
@@ -373,11 +426,11 @@ export default function App() {
       <main className="flex-1 relative">
         <OpticalBench
           mirrorAngle={mirrorAngle}
-          setMirrorAngle={setMirrorAngle}
+          setMirrorAngle={handleSetMirrorAngle}
           incidentAngle={incidentAngle}
-          setIncidentAngle={setIncidentAngle}
+          setIncidentAngle={handleSetIncidentAngle}
           sourceDist={sourceDist}
-          setSourceDist={setSourceDist}
+          setSourceDist={handleSetSourceDist}
           handleRadius={handleRadius}
           setHandleRadius={setHandleRadius}
           highlight={activeHighlight}
@@ -386,9 +439,9 @@ export default function App() {
       </main>
       <ControlPanel
         mirrorAngle={mirrorAngle}
-        setMirrorAngle={setMirrorAngle}
+        setMirrorAngle={handleSetMirrorAngle}
         incidentAngle={incidentAngle}
-        setIncidentAngle={setIncidentAngle}
+        setIncidentAngle={handleSetIncidentAngle}
         highlight={activeHighlight}
         onInteractionEnd={handleInteractionEnd}
       />
