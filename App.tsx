@@ -34,7 +34,6 @@ const WIZARD_TUTORIAL_STEPS: TutorialStep[] = [
   { message: "You can rotate the second mirror by dragging this blue handle.", highlight: 'mirrorControl' },
   { message: "The Orb of Light (the yellow circle) emits the sacred ray. You can move it by dragging along its path.", highlight: 'sourceControl' },
   { message: "Or use these panels for precise control.", highlight: 'mirrorButton' },
-  { message: "Unlock the secrets of the Virtual Image! Toggle this button to reveal the hidden sources.", highlight: 'virtualSourcesToggle' },
   { message: "Your quest: Solve the puzzles of reflection to earn the Royal Jewels!", highlight: undefined }
 ];
 
@@ -57,7 +56,7 @@ export default function App() {
   const [incidentAngle, setIncidentAngle] = useState(60);
   const [sourceDist, setSourceDist] = useState(100 * 0.3);
   const [handleRadius, setHandleRadius] = useState(100);
-  const [showVirtualSources, setShowVirtualSources] = useState(false);
+
 
   // Game State
   const [gameState, setGameState] = useState<GameState>({
@@ -483,7 +482,7 @@ export default function App() {
             handleRadius={handleRadius}
             setHandleRadius={setHandleRadius}
             highlight={activeHighlight}
-            showVirtualSources={showVirtualSources}
+
             onInteractionEnd={handleInteractionEnd}
           />
         )}
@@ -495,8 +494,7 @@ export default function App() {
           incidentAngle={incidentAngle}
           setIncidentAngle={handleSetIncidentAngle}
           highlight={activeHighlight}
-          showVirtualSources={showVirtualSources}
-          setShowVirtualSources={setShowVirtualSources}
+
           onInteractionEnd={handleInteractionEnd}
         />
       )}
