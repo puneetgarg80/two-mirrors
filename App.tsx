@@ -166,11 +166,10 @@ export default function App() {
         setGameState(prev => ({
           ...prev,
           challenge: 3,
-          jewels: prev.jewels + 1,
-          points: prev.points + 100
+          points: prev.points + 10
         }));
         setWizardText(WIZARD_MESSAGES.c3_start);
-        triggerToast("Challenge 2 Complete! +1 Jewel 💎");
+        triggerToast("Challenge 2 Complete! +10 Points");
       }
     } else if (gameState.challenge === 3) {
       if (reflectionCount === 2 && path.length >= 2) {
@@ -193,12 +192,11 @@ export default function App() {
             ...prev,
             challenge: 4,
             c4StartAngle: incidentAngle, // Store snapshot
-            jewels: prev.jewels + 1,
-            points: prev.points + 100
+            points: prev.points + 10
           }));
           setWizardText(WIZARD_MESSAGES.c4_start);
           setQuizTriggered(false); // Reset quiz state for next challenge
-          triggerToast("Part 1 Complete! Now Observe... 👁️");
+          triggerToast("Part 1 Complete! +10 Points");
         }
       }
     } else if (gameState.challenge === 4) {
@@ -247,8 +245,7 @@ export default function App() {
         setGameState(prev => ({
           ...prev,
           challenge: 5,
-          jewels: prev.jewels + 1,
-          points: prev.points + 100
+          points: prev.points + 10
         }));
         setWizardText(WIZARD_MESSAGES.c5_start);
         triggerToast("Correct! Next: The General Case 🤔");
