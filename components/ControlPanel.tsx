@@ -8,6 +8,7 @@ interface ControlPanelProps {
   incidentAngle: number;
   setIncidentAngle: (val: number) => void;
   highlight: HighlightTarget | null;
+  onInteractionEnd: () => void;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -16,6 +17,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   incidentAngle,
   setIncidentAngle,
   highlight,
+  onInteractionEnd
 }) => {
   const [activeControl, setActiveControl] = useState<'mirror' | 'source' | null>(null);
 
@@ -79,6 +81,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                   max="360"
                   value={mirrorAngle}
                   onChange={(e) => setMirrorAngle(Number(e.target.value))}
+                  onMouseUp={onInteractionEnd}
+                  onTouchEnd={onInteractionEnd}
                   className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500 hover:accent-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
                 />
                 <div className="flex justify-between items-center text-xs text-slate-500 font-mono mt-2">
@@ -89,6 +93,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                     max="360"
                     value={Math.round(mirrorAngle)}
                     onChange={(e) => setMirrorAngle(Number(e.target.value))}
+                    onBlur={onInteractionEnd}
                     className="w-16 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-center font-mono text-cyan-400 focus:outline-none focus:border-cyan-500"
                   />
                   <span>360°</span>
@@ -110,6 +115,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                   max="360"
                   value={incidentAngle}
                   onChange={(e) => setIncidentAngle(Number(e.target.value))}
+                  onMouseUp={onInteractionEnd}
+                  onTouchEnd={onInteractionEnd}
                   className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500 hover:accent-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
                 />
                 <div className="flex justify-between items-center text-xs text-slate-500 font-mono mt-2">
@@ -120,6 +127,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                     max="360"
                     value={Math.round(incidentAngle)}
                     onChange={(e) => setIncidentAngle(Number(e.target.value))}
+                    onBlur={onInteractionEnd}
                     className="w-16 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-center font-mono text-yellow-400 focus:outline-none focus:border-yellow-500"
                   />
                   <span>360°</span>

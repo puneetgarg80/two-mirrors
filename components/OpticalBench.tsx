@@ -9,6 +9,7 @@ interface OpticalBenchProps {
   incidentAngle: number;
   setIncidentAngle: (angle: number) => void;
   highlight: HighlightTarget | null;
+  onInteractionEnd: () => void;
 }
 
 const OpticalBench: React.FC<OpticalBenchProps> = ({
@@ -16,7 +17,8 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   setMirrorAngle,
   incidentAngle,
   setIncidentAngle,
-  highlight
+  highlight,
+  onInteractionEnd
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -160,6 +162,7 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   const handlePointerUp = (e: React.PointerEvent) => {
     e.currentTarget.releasePointerCapture(e.pointerId);
     setDragTarget(null);
+    onInteractionEnd();
   };
 
   // --- SVG Coordinates ---

@@ -109,126 +109,122 @@ export default function App() {
   }, [mirrorAngle, incidentAngle, gameState.started]);
 
 
-  // --- Logic Check ---
-  useEffect(() => {
+  // --- Logic Check (Triggered on Interaction End) ---
+  const handleInteractionEnd = () => {
     if (!simulation || gameState.challenge === 7) return;
 
-    const timer = setTimeout(() => {
-      const { reflectionCount, path, rayDirVector } = simulation;
+    const { reflectionCount, path, rayDirVector } = simulation;
 
-      // 2. Evaluate Challenges
-      if (gameState.challenge === 1) {
-        if (reflectionCount === 1) {
-          let updateNeeded = false;
-          const newProgress = { ...gameState.c1Progress };
+    // 2. Evaluate Challenges
+    if (gameState.challenge === 1) {
+      if (reflectionCount === 1) {
+        let updateNeeded = false;
+        const newProgress = { ...gameState.c1Progress };
 
-          // Method A: Left of Normal (Source > 90)
-          if (incidentAngle > 90 && !newProgress.methodA) {
-            newProgress.methodA = true;
-            updateNeeded = true;
-            triggerToast("Discovered: The Path Away!");
-          }
-
-          // Method B: Wide Angle
-          if (incidentAngle <= 90 && !newProgress.methodB) {
-            newProgress.methodB = true;
-            updateNeeded = true;
-            triggerToast("Discovered: The Open Door!");
-          }
-
-          if (updateNeeded) {
-            if (newProgress.methodA && newProgress.methodB) {
-              setGameState(prev => ({
-                ...prev,
-                challenge: 2,
-                jewels: prev.jewels + 1,
-                c1Progress: newProgress
-              }));
-              setWizardText(WIZARD_MESSAGES.c2_start);
-              triggerToast("Challenge 1 Complete! +1 Jewel 💎");
-            } else {
-              setGameState(prev => ({ ...prev, c1Progress: newProgress }));
-              setWizardText(WIZARD_MESSAGES.c1_progress);
-            }
-          }
+        // Method A: Left of Normal (Source > 90)
+        if (incidentAngle > 90 && !newProgress.methodA) {
+          newProgress.methodA = true;
+          updateNeeded = true;
+          triggerToast("Discovered: The Path Away!");
         }
-      } else if (gameState.challenge === 2) {
-        if (reflectionCount === 2) {
-          setGameState(prev => ({
-            ...prev,
-            challenge: 3,
-            jewels: prev.jewels + 1
-          }));
-          setWizardText(WIZARD_MESSAGES.c3_start);
-          triggerToast("Challenge 2 Complete! +1 Jewel 💎");
+
+        // Method B: Wide Angle
+        if (incidentAngle <= 90 && !newProgress.methodB) {
+          newProgress.methodB = true;
+          updateNeeded = true;
+          triggerToast("Discovered: The Open Door!");
         }
-      } else if (gameState.challenge === 3) {
-        if (reflectionCount === 2 && path.length >= 2) {
-          const lastPt = path[path.length - 1];
-          const prevPt = path[path.length - 2];
-          const lastDx = lastPt.x - prevPt.x;
-          const lastDy = lastPt.y - prevPt.y;
 
-          const lenInit = Math.sqrt(rayDirVector.x ** 2 + rayDirVector.y ** 2);
-          const nxInit = rayDirVector.x / lenInit;
-          const nyInit = rayDirVector.y / lenInit;
-
-          const nxFinal = lastDx / Math.sqrt(lastDx ** 2 + lastDy ** 2);
-          const nyFinal = lastDy / Math.sqrt(lastDx ** 2 + lastDy ** 2);
-
-          const dot = nxInit * nxFinal + nyInit * nyFinal;
-
-          if (dot < -0.99 && Math.round(mirrorAngle) === 90) {
+        if (updateNeeded) {
+          if (newProgress.methodA && newProgress.methodB) {
             setGameState(prev => ({
               ...prev,
-              challenge: 4,
-              c4StartAngle: incidentAngle, // Store snapshot
-              jewels: prev.jewels + 1
+              challenge: 2,
+              jewels: prev.jewels + 1,
+              c1Progress: newProgress
             }));
-            setWizardText(WIZARD_MESSAGES.c4_start);
-            setQuizTriggered(false); // Reset quiz state for next challenge
-            triggerToast("Part 1 Complete! Now Observe... 👁️");
-          }
-        }
-      } else if (gameState.challenge === 4) {
-        // Enforce staying at 90 degrees
-        if (Math.round(mirrorAngle) !== 90) {
-          // User moved mirror away from 90.
-        } else {
-          // Check if they moved the light source significantly
-          const startAngle = gameState.c4StartAngle ?? incidentAngle;
-          const diff = Math.abs(incidentAngle - startAngle);
-          if (diff > 10 && !quizTriggered) {
-            setQuizTriggered(true); // Trigger Quiz 1
-          }
-        }
-      } else if (gameState.challenge === 5) {
-        // Goal: Set mirror to ~60 (+/- 5), then move source
-        const targetAngle = 110;
-        if (Math.abs(mirrorAngle - targetAngle) <= 5) {
-          // They are in the target range.
-          // Have they moved the source while IN this range?
-
-          // Correct initialization of tracking state if not set or if mirror moved significantly
-          if (gameState.c5MirrorAngle === undefined || Math.abs(gameState.c5MirrorAngle - mirrorAngle) > 2) {
-            // Reset baseline if mirror changed
-            setGameState(prev => ({ ...prev, c5MirrorAngle: mirrorAngle, c5StartAngle: incidentAngle }));
+            setWizardText(WIZARD_MESSAGES.c2_start);
+            triggerToast("Challenge 1 Complete! +1 Jewel 💎");
           } else {
-            // Check Source Movement
-            const startIncident = gameState.c5StartAngle ?? incidentAngle;
-            const diff = Math.abs(incidentAngle - startIncident);
-
-            if (diff > 20 && !quizTriggered) {
-              setQuizTriggered(true); // Trigger Quiz 2
-            }
+            setGameState(prev => ({ ...prev, c1Progress: newProgress }));
+            setWizardText(WIZARD_MESSAGES.c1_progress);
           }
         }
       }
-      // Challenge 6 is the Quiz state itself
-    }, 500); // Reasonably fast debounce
+    } else if (gameState.challenge === 2) {
+      if (reflectionCount === 2) {
+        setGameState(prev => ({
+          ...prev,
+          challenge: 3,
+          jewels: prev.jewels + 1
+        }));
+        setWizardText(WIZARD_MESSAGES.c3_start);
+        triggerToast("Challenge 2 Complete! +1 Jewel 💎");
+      }
+    } else if (gameState.challenge === 3) {
+      if (reflectionCount === 2 && path.length >= 2) {
+        const lastPt = path[path.length - 1];
+        const prevPt = path[path.length - 2];
+        const lastDx = lastPt.x - prevPt.x;
+        const lastDy = lastPt.y - prevPt.y;
 
-    return () => clearTimeout(timer);
-  }, [simulation, gameState.challenge, gameState.c1Progress, incidentAngle, setGameState, setWizardText, mirrorAngle, quizTriggered, gameState.c5MirrorAngle, gameState.c5StartAngle, gameState.c4StartAngle]);
+        const lenInit = Math.sqrt(rayDirVector.x ** 2 + rayDirVector.y ** 2);
+        const nxInit = rayDirVector.x / lenInit;
+        const nyInit = rayDirVector.y / lenInit;
+
+        const nxFinal = lastDx / Math.sqrt(lastDx ** 2 + lastDy ** 2);
+        const nyFinal = lastDy / Math.sqrt(lastDx ** 2 + lastDy ** 2);
+
+        const dot = nxInit * nxFinal + nyInit * nyFinal;
+
+        if (dot < -0.99 && Math.round(mirrorAngle) === 90) {
+          setGameState(prev => ({
+            ...prev,
+            challenge: 4,
+            c4StartAngle: incidentAngle, // Store snapshot
+            jewels: prev.jewels + 1
+          }));
+          setWizardText(WIZARD_MESSAGES.c4_start);
+          setQuizTriggered(false); // Reset quiz state for next challenge
+          triggerToast("Part 1 Complete! Now Observe... 👁️");
+        }
+      }
+    } else if (gameState.challenge === 4) {
+      // Enforce staying at 90 degrees
+      if (Math.round(mirrorAngle) !== 90) {
+        // User moved mirror away from 90.
+      } else {
+        // Check if they moved the light source significantly
+        const startAngle = gameState.c4StartAngle ?? incidentAngle;
+        const diff = Math.abs(incidentAngle - startAngle);
+        if (diff > 10 && !quizTriggered) {
+          setQuizTriggered(true); // Trigger Quiz 1
+        }
+      }
+    } else if (gameState.challenge === 5) {
+      // Goal: Set mirror to ~60 (+/- 5), then move source
+      const targetAngle = 110;
+      if (Math.abs(mirrorAngle - targetAngle) <= 5) {
+        // They are in the target range.
+        // Have they moved the source while IN this range?
+
+        // Correct initialization of tracking state if not set or if mirror moved significantly
+        if (gameState.c5MirrorAngle === undefined || Math.abs(gameState.c5MirrorAngle - mirrorAngle) > 2) {
+          // Reset baseline if mirror changed
+          setGameState(prev => ({ ...prev, c5MirrorAngle: mirrorAngle, c5StartAngle: incidentAngle }));
+          triggerToast(`Mirror Set at ${Math.round(mirrorAngle)}°! Now move the Source.`);
+        } else {
+          // Check Source Movement
+          const startIncident = gameState.c5StartAngle ?? incidentAngle;
+          const diff = Math.abs(incidentAngle - startIncident);
+
+          if (diff > 10 && !quizTriggered) {
+            setQuizTriggered(true); // Trigger Quiz 2
+          }
+        }
+      }
+    }
+  };
 
   const handleQuizAnswer = (answerIndex: number) => {
     setQuizTriggered(false); // Hide quiz after answer
@@ -378,6 +374,7 @@ export default function App() {
           incidentAngle={incidentAngle}
           setIncidentAngle={setIncidentAngle}
           highlight={activeHighlight}
+          onInteractionEnd={handleInteractionEnd}
         />
       </main>
       <ControlPanel
@@ -386,6 +383,7 @@ export default function App() {
         incidentAngle={incidentAngle}
         setIncidentAngle={setIncidentAngle}
         highlight={activeHighlight}
+        onInteractionEnd={handleInteractionEnd}
       />
     </div>
   );
