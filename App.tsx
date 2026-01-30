@@ -132,14 +132,16 @@ export default function App() {
         if (incidentAngle > 90 && !newProgress.methodA) {
           newProgress.methodA = true;
           updateNeeded = true;
-          triggerToast("Discovered: One Way!");
+          setGameState(prev => ({ ...prev, points: prev.points + 10 }));
+          triggerToast("Discovered: One Way! +10 Points");
         }
 
         // Method B: Wide Angle
         if (incidentAngle <= 90 && !newProgress.methodB) {
           newProgress.methodB = true;
           updateNeeded = true;
-          triggerToast("Discovered: Another Way!");
+          setGameState(prev => ({ ...prev, points: prev.points + 10 }));
+          triggerToast("Discovered: Another Way! +10 Points");
         }
 
         if (updateNeeded) {
@@ -147,12 +149,12 @@ export default function App() {
             setGameState(prev => ({
               ...prev,
               challenge: 2,
-              jewels: prev.jewels + 1,
-              points: prev.points + 100,
+              // No jewels for Challenge 1
+              // No bonus points for Challenge 1 completion, just the 10+10 already awarded
               c1Progress: newProgress
             }));
             setWizardText(WIZARD_MESSAGES.c2_start);
-            triggerToast("Challenge 1 Complete! +1 Jewel 💎");
+            triggerToast("Challenge 1 Complete!");
           } else {
             setGameState(prev => ({ ...prev, c1Progress: newProgress }));
             setWizardText("Brilliant! You found one way. Now, find the other path to a single reflection. Hint: Have you tried moving both the Mirror and the Source?");
