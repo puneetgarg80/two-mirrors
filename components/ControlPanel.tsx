@@ -27,7 +27,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
   return (
     <>
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex gap-2">
+      <div className="fixed top-4 left-16 z-40 flex gap-2">
 
         {/* Mirror Control Button */}
         <button
