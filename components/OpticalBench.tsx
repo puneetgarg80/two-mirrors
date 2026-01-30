@@ -400,6 +400,45 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
         {/* --- REFLECTION ANGLES --- */}
         <g>
           {reflections.map((ref, idx) => {
+            // Incoming ray angle (pointing backwards from the reflection point)
+            const prevPt = path[idx];
+            const currentPt = path[idx + 1];
+            const dx = prevPt.x - currentPt.x;
+            const dy = prevPt.y - currentPt.y;
+            const sourceAngle = radToDeg(Math.atan2(dy, dx));
+
+            // Arc for Angle of Incidence
+            const arcR = 30; // Radius for the arc
+            const arcStart = {
+              x: ref.point.x + arcR * Math.cos(degToRad(ref.normalAngle)),
+              y: ref.point.y + arcR * Math.sin(degToRad(ref.normalAngle))
+            };
+            const arcEnd = {
+              x: ref.point.x + arcR * Math.cos(degToRad(sourceAngle)),
+              y: ref.point.y + arcR * Math.sin(degToRad(sourceAngle))
+            };
+
+            const svgArcStart = mapToSvg(arcStart);
+            const svgArcEnd = mapToSvg(arcEnd);
+
+            // Determine sweep-flag: cross product of normal and incoming vector
+            // normalize normal vector n = (nx, ny)
+            // normalize incoming vector v = (dx, dy)
+            // cp = nx * dy - ny * dx
+            const nx = Math.cos(degToRad(ref.normalAngle));
+            const ny = Math.sin(degToRad(ref.normalAngle));
+            const cp = nx * dy - ny * dx;
+            const sweepFlag = cp > 0 ? 0 : 1;
+
+            const arcPath = `M ${svgArcStart.x} ${svgArcStart.y} A ${arcR} ${arcR} 0 0 ${sweepFlag} ${svgArcEnd.x} ${svgArcEnd.y}`;
+
+            // Offset text along the angle between normal and source
+            const midAngle = cp > 0 ? ref.normalAngle + ref.incidentAngle / 2 : ref.normalAngle - ref.incidentAngle / 2;
+            const textDist = arcR + 12; // Adjusted distance to place text closer to the arc
+            const svgTextPos = mapToSvg({
+              x: ref.point.x + textDist * Math.cos(degToRad(midAngle)),
+              y: ref.point.y + textDist * Math.sin(degToRad(midAngle))
+            });
             const sp = mapToSvg(ref.point);
 
             // Calculate normal end point in math space
@@ -409,11 +448,6 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
               y: ref.point.y + normalLen * Math.sin(degToRad(ref.normalAngle))
             };
             const spEnd = mapToSvg(normalEndMath);
-
-            // Offset text along the normal
-            const dist = 20;
-            const tx = sp.x + dist * Math.cos(degToRad(-ref.normalAngle));
-            const ty = sp.y + dist * Math.sin(degToRad(-ref.normalAngle));
 
             return (
               <g key={idx}>
@@ -428,9 +462,18 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
                   strokeDasharray="4 4"
                   opacity="0.6"
                 />
+                {/* Arc path */}
+                <path
+                  d={arcPath}
+                  fill="none"
+                  stroke="#94a3b8"
+                  strokeWidth="1"
+                  strokeDasharray="2 2"
+                  opacity="0.8"
+                />
                 <text
-                  x={tx}
-                  y={ty}
+                  x={svgTextPos.x}
+                  y={svgTextPos.y}
                   fill="#ffffff"
                   fontSize="10"
                   textAnchor="middle"
