@@ -46,7 +46,7 @@ const WIZARD_MESSAGES = {
   c4_quiz: "You changed the incident angle while keeping the mirrors at 90°. Does the deviation angle change?",
   c5_start: "Interesting... the deviation stayed constant at 180°. Your next challenge: Check if this rule holds for OTHER angles. Set the mirror to roughly 110°. Then move the light to check constancy.",
   c5_quiz: "You tested 90° and 110°. In a 2-reflection system, the total deviation depends on:",
-  complete: "Magnificent! You have discovered the General Law: For 2 reflections, Total Deviation depends ONLY on the Mirror Angle (D = 360 - 2θ). You are a true Optic Master!",
+  complete: "Magnificent! You have discovered the General Law: For 2 reflections, Total Deviation depends ONLY on the Mirror Angle. You are a true Optic Master!",
 };
 
 export default function App() {
