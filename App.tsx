@@ -292,7 +292,7 @@ export default function App() {
     const my = Math.sin(degToRad(mAngle));
     const cp = mx * sourcePos.y - my * sourcePos.x;
 
-    console.log('checkConstraints:', { mAngle, iAngle, sDist, sourcePos, mx, my, cp });
+    // console.log('checkConstraints:', { mAngle, iAngle, sDist, sourcePos, mx, my, cp });
 
     const BUFFER = -15;
 
