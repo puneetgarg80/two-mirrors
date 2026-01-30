@@ -8,6 +8,8 @@ interface ControlPanelProps {
   incidentAngle: number;
   setIncidentAngle: (val: number) => void;
   highlight: HighlightTarget | null;
+  showVirtualSources: boolean;
+  setShowVirtualSources: (val: boolean) => void;
   onInteractionEnd: () => void;
 }
 
@@ -17,6 +19,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   incidentAngle,
   setIncidentAngle,
   highlight,
+  showVirtualSources,
+  setShowVirtualSources,
   onInteractionEnd
 }) => {
   const [activeControl, setActiveControl] = useState<'mirror' | 'source' | null>(null);
@@ -51,6 +55,17 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         >
           <Sun size={18} />
           <span>Source</span>
+        </button>
+
+        {/* Virtual Source Toggle */}
+        <button
+          onClick={() => setShowVirtualSources(!showVirtualSources)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 font-medium ${showVirtualSources
+            ? 'bg-purple-900/80 border-purple-500 text-purple-200 shadow-[0_0_15px_rgba(168,85,247,0.3)]'
+            : 'bg-slate-900/80 border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+            }`}
+        >
+          <span>Virtual Sources</span>
         </button>
 
       </div>

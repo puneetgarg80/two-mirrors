@@ -13,6 +13,7 @@ interface OpticalBenchProps {
   handleRadius: number;
   setHandleRadius: (radius: number) => void;
   highlight: HighlightTarget | null;
+  showVirtualSources: boolean;
   onInteractionEnd: () => void;
 }
 
@@ -26,6 +27,7 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   handleRadius,
   setHandleRadius,
   highlight,
+  showVirtualSources,
   onInteractionEnd
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -439,55 +441,56 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
             );
           })}
         </g>
-
         {/* --- VIRTUAL SOURCES & CONNECTIONS --- */}
-        <g>
-          {reflections.map((ref, idx) => {
-            if (!ref.virtualSource) return null;
-            const svgVs = mapToSvg(ref.virtualSource);
-            const svgRefPoint = mapToSvg(ref.point);
+        {showVirtualSources && (
+          <g>
+            {reflections.map((ref, idx) => {
+              if (!ref.virtualSource) return null;
+              const svgVs = mapToSvg(ref.virtualSource);
+              const svgRefPoint = mapToSvg(ref.point);
 
-            // Assign color based on index
-            const colors = ['#a855f7', '#ec4899', '#f43f5e', '#f97316', '#84cc16', '#22c55e', '#06b6d4', '#3b82f6'];
-            const color = colors[idx % colors.length];
+              // Assign color based on index
+              const colors = ['#a855f7', '#ec4899', '#f43f5e', '#f97316', '#84cc16', '#22c55e', '#06b6d4', '#3b82f6'];
+              const color = colors[idx % colors.length];
 
-            return (
-              <g key={`vs-${idx}`}>
-                {/* Connection Line */}
-                <line
-                  x1={svgVs.x}
-                  y1={svgVs.y}
-                  x2={svgRefPoint.x}
-                  y2={svgRefPoint.y}
-                  stroke={color}
-                  strokeWidth="1.5"
-                  strokeDasharray="6 4"
-                  opacity="0.7"
-                />
-                {/* Virtual Source Marker */}
-                <circle
-                  cx={svgVs.x}
-                  cy={svgVs.y}
-                  r="6"
-                  fill="none"
-                  stroke={color}
-                  strokeWidth="2"
-                  opacity="0.8"
-                />
-                <text
-                  x={svgVs.x}
-                  y={svgVs.y - 10}
-                  fill={color}
-                  fontSize="12"
-                  textAnchor="middle"
-                  opacity="0.8"
-                >
-                  L'{idx + 1}
-                </text>
-              </g>
-            );
-          })}
-        </g>
+              return (
+                <g key={`vs-${idx}`}>
+                  {/* Connection Line */}
+                  <line
+                    x1={svgVs.x}
+                    y1={svgVs.y}
+                    x2={svgRefPoint.x}
+                    y2={svgRefPoint.y}
+                    stroke={color}
+                    strokeWidth="1.5"
+                    strokeDasharray="6 4"
+                    opacity="0.7"
+                  />
+                  {/* Virtual Source Marker */}
+                  <circle
+                    cx={svgVs.x}
+                    cy={svgVs.y}
+                    r="6"
+                    fill="none"
+                    stroke={color}
+                    strokeWidth="2"
+                    opacity="0.8"
+                  />
+                  <text
+                    x={svgVs.x}
+                    y={svgVs.y - 10}
+                    fill={color}
+                    fontSize="12"
+                    textAnchor="middle"
+                    opacity="0.8"
+                  >
+                    L'{idx + 1}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+        )}
 
         {/* --- SOURCE & INCIDENT CONTROL --- */}
         <g

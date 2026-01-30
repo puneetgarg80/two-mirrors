@@ -55,6 +55,7 @@ export default function App() {
   const [incidentAngle, setIncidentAngle] = useState(60);
   const [sourceDist, setSourceDist] = useState(100 * 0.3);
   const [handleRadius, setHandleRadius] = useState(100);
+  const [showVirtualSources, setShowVirtualSources] = useState(false);
 
   // Game State
   const [gameState, setGameState] = useState<GameState>({
@@ -434,6 +435,7 @@ export default function App() {
           handleRadius={handleRadius}
           setHandleRadius={setHandleRadius}
           highlight={activeHighlight}
+          showVirtualSources={showVirtualSources}
           onInteractionEnd={handleInteractionEnd}
         />
       </main>
@@ -443,6 +445,8 @@ export default function App() {
         incidentAngle={incidentAngle}
         setIncidentAngle={handleSetIncidentAngle}
         highlight={activeHighlight}
+        showVirtualSources={showVirtualSources}
+        setShowVirtualSources={setShowVirtualSources}
         onInteractionEnd={handleInteractionEnd}
       />
     </div>
