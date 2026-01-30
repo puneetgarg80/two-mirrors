@@ -63,7 +63,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 font-medium ${showVirtualSources
             ? 'bg-purple-900/80 border-purple-500 text-purple-200 shadow-[0_0_15px_rgba(168,85,247,0.3)]'
             : 'bg-slate-900/80 border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-            }`}
+            } ${highlight === 'virtualSourcesToggle' ? 'animate-bounce delay-200 ring-2 ring-purple-500 ring-offset-2 ring-offset-slate-900' : ''}`}
         >
           <span>Virtual Sources</span>
         </button>
