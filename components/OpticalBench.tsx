@@ -239,7 +239,7 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   };
 
   return (
-    <div className="w-full h-full bg-slate-950 relative overflow-hidden select-none">
+    <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden select-none">
 
       {/* Reset/Info Overlay */}
       <div className="absolute top-4 left-4 z-10 pointer-events-none">
@@ -313,7 +313,7 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
         />
         {/* Mirror 2 (Rotatable) */}
         <g
-          className="cursor-grab active:cursor-grabbing"
+          className="cursor-grab active:cursor-grabbing pointer-events-auto"
           onPointerDown={(e) => handlePointerDown(e, 'mirror')}
         >
           <line
@@ -494,7 +494,7 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
 
         {/* --- SOURCE & INCIDENT CONTROL --- */}
         <g
-          className="cursor-grab active:cursor-grabbing"
+          className="cursor-grab active:cursor-grabbing pointer-events-auto"
           onPointerDown={(e) => handlePointerDown(e, 'ray')}
         >
           <line

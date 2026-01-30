@@ -130,14 +130,14 @@ export default function App() {
         if (incidentAngle > 90 && !newProgress.methodA) {
           newProgress.methodA = true;
           updateNeeded = true;
-          triggerToast("Discovered: The Path Away!");
+          triggerToast("Discovered: One Way!");
         }
 
         // Method B: Wide Angle
         if (incidentAngle <= 90 && !newProgress.methodB) {
           newProgress.methodB = true;
           updateNeeded = true;
-          triggerToast("Discovered: The Open Door!");
+          triggerToast("Discovered: Another Way!");
         }
 
         if (updateNeeded) {
@@ -152,7 +152,7 @@ export default function App() {
             triggerToast("Challenge 1 Complete! +1 Jewel 💎");
           } else {
             setGameState(prev => ({ ...prev, c1Progress: newProgress }));
-            setWizardText(WIZARD_MESSAGES.c1_progress);
+            setWizardText("Brilliant! You found one way. Now, find the other path to a single reflection. Hint: Have you tried moving both the Mirror and the Source?");
           }
         }
       }
@@ -382,11 +382,11 @@ export default function App() {
           <div className="flex flex-col gap-1 text-xs font-bold">
             <div className={`flex items-center gap-2 ${gameState.c1Progress.methodA ? 'text-green-400' : 'text-slate-500'} `}>
               {gameState.c1Progress.methodA ? <CheckCircle2 size={12} /> : <div className="w-3 h-3 rounded-full border border-current" />}
-              &nbsp; Path Away
+              &nbsp; Method 1
             </div>
             <div className={`flex items-center gap-2 ${gameState.c1Progress.methodB ? 'text-green-400' : 'text-slate-500'} `}>
               {gameState.c1Progress.methodB ? <CheckCircle2 size={12} /> : <div className="w-3 h-3 rounded-full border border-current" />}
-              &nbsp; Open Door
+              &nbsp; Method 2
             </div>
           </div>
         )}
@@ -425,7 +425,7 @@ export default function App() {
         </div>
       )}
 
-      <main className="flex-1 relative">
+      <main className="flex-1 relative bg-slate-950">
         <OpticalBench
           mirrorAngle={mirrorAngle}
           setMirrorAngle={handleSetMirrorAngle}
