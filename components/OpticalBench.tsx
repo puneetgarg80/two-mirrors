@@ -8,6 +8,8 @@ interface OpticalBenchProps {
   setMirrorAngle: (angle: number) => void;
   incidentAngle: number;
   setIncidentAngle: (angle: number) => void;
+  sourceDist: number;
+  setSourceDist: (dist: number) => void;
   highlight: HighlightTarget | null;
   onInteractionEnd: () => void;
 }
@@ -17,6 +19,8 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   setMirrorAngle,
   incidentAngle,
   setIncidentAngle,
+  sourceDist,
+  setSourceDist,
   highlight,
   onInteractionEnd
 }) => {
@@ -25,7 +29,6 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   const [dragTarget, setDragTarget] = useState<'mirror' | 'ray' | null>(null);
   const [showInfo, setShowInfo] = useState(false);
 
-  const [sourceDist, setSourceDist] = useState(100); // Default initial distance
 
   useEffect(() => {
     const updateDim = () => {
