@@ -31,36 +31,36 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
   return (
     <>
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex gap-4">
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-40 flex gap-2">
 
         {/* Mirror Control Button */}
         <button
           onClick={() => toggleControl('mirror')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 font-medium ${activeControl === 'mirror'
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 font-medium text-sm ${activeControl === 'mirror'
             ? 'bg-cyan-900/80 border-cyan-500 text-cyan-200 shadow-[0_0_15px_rgba(34,211,238,0.3)]'
             : 'bg-slate-900/80 border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
             } ${highlight === 'mirrorButton' ? 'animate-bounce ring-2 ring-cyan-500 ring-offset-2 ring-offset-slate-900' : ''}`}
         >
-          <Settings2 size={18} />
+          <Settings2 size={16} />
           <span>Mirror</span>
         </button>
 
         {/* Source Control Button */}
         <button
           onClick={() => toggleControl('source')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 font-medium ${activeControl === 'source'
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 font-medium text-sm ${activeControl === 'source'
             ? 'bg-yellow-900/80 border-yellow-500 text-yellow-200 shadow-[0_0_15px_rgba(250,204,21,0.3)]'
             : 'bg-slate-900/80 border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
             } ${highlight === 'sourceButton' || highlight === 'mirrorButton' ? 'animate-bounce delay-100 ring-2 ring-yellow-500 ring-offset-2 ring-offset-slate-900' : ''}`}
         >
-          <Sun size={18} />
+          <Sun size={16} />
           <span>Source</span>
         </button>
 
         {/* Virtual Source Toggle */}
         <button
           onClick={() => setShowVirtualSources(!showVirtualSources)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 font-medium ${showVirtualSources
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-200 font-medium text-sm ${showVirtualSources
             ? 'bg-purple-900/80 border-purple-500 text-purple-200 shadow-[0_0_15px_rgba(168,85,247,0.3)]'
             : 'bg-slate-900/80 border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
             } ${highlight === 'virtualSourcesToggle' ? 'animate-bounce delay-200 ring-2 ring-purple-500 ring-offset-2 ring-offset-slate-900' : ''}`}
