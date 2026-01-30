@@ -4,7 +4,7 @@ import ControlPanel from './components/ControlPanel';
 import DialoguePanel from './components/DialoguePanel';
 import { calculateRayPath, degToRad } from './utils/geometry';
 import { Mirror, HighlightTarget } from './types';
-import { Gem, CheckCircle2, RotateCcw, Star } from 'lucide-react';
+import { Gem, CheckCircle2, RotateCcw, Star, ChevronRight } from 'lucide-react';
 
 // --- Game Constants & Types ---
 type ChallengeId = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7; // 0: Tutorial, ... 4: Constancy Check, 5: Test Other Angles, 6: Theory Quiz, 7: Done
@@ -145,7 +145,23 @@ export default function App() {
         }
 
         if (updateNeeded) {
-          if (newProgress.methodA && newProgress.methodB) {
+          // Check if this was the FIRST discovery (i.e., before this update, both were false)
+          // We can check if now exactly ONE is true.
+          const methodsFound = (newProgress.methodA ? 1 : 0) + (newProgress.methodB ? 1 : 0);
+
+          if (methodsFound === 1) {
+            // First discovery! Auto-stay and show hint.
+            setGameState(prev => ({ ...prev, c1Progress: newProgress }));
+
+            if (newProgress.methodA) {
+              // Found A (>90), need B (<=90)
+              setWizardText("Excellent spirit! You found the wide angle way. Now try moving the Light Source away from Mirror on the left and adjusting mirror angle.");
+            } else {
+              // Found B (<=90), need A (>90)
+              setWizardText("Excellent spirit! You found the acute angle way. Now try moving the Light Source towards Mirror on the left.");
+            }
+          } else if (methodsFound === 2) {
+            // Found both! Auto-advance.
             setGameState(prev => ({
               ...prev,
               challenge: 2,
@@ -155,9 +171,6 @@ export default function App() {
             }));
             setWizardText(WIZARD_MESSAGES.c2_start);
             triggerToast("Challenge 1 Complete!");
-          } else {
-            setGameState(prev => ({ ...prev, c1Progress: newProgress }));
-            setWizardText("Brilliant! You found one way. Now, find the other path to a single reflection. Hint: Have you tried moving both the Mirror and the Source?");
           }
         }
       }
@@ -251,6 +264,26 @@ export default function App() {
         triggerToast("Correct! Next: The General Case 🤔");
       } else {
         triggerToast("Incorrect. Watch the deviation value closely!");
+      }
+    } else if (gameState.challenge === 1) { // Challenge 1 Choice
+      const choice = answerIndex; // 0 = Find 2nd Way, 1 = Move Next
+      if (choice === 1) {
+        // Move to Challenge 2
+        setGameState(prev => ({
+          ...prev,
+          challenge: 2
+        }));
+        setWizardText(WIZARD_MESSAGES.c2_start);
+        triggerToast("Moving to Challenge 2!");
+      } else {
+        // Stay and find 2nd way
+        if (gameState.c1Progress.methodA) {
+          // Found A (>90), need B (<=90)
+          setWizardText("Excellent spirit! You found the wide angle way. Now try moving the Light Source to a different quadrant (Angle <= 90°) and adjusting mirror angle.");
+        } else {
+          // Found B (<=90), need A (>90)
+          setWizardText("Excellent spirit! You found the acute angle way. Now try moving the Light Source towards Mirror on the left.");
+        }
       }
     } else if (gameState.challenge === 5) { // Quiz 2: General Theory triggered from C5
       // Quiz 2 Logic
@@ -371,7 +404,7 @@ export default function App() {
   const dialogueProps = {
     started: gameState.started,
     type: (gameState.challenge === 7 ? 'VICTORY' : (gameState.challenge === 0 ? 'TUTORIAL' : (quizTriggered ? 'QUIZ' : 'INFO'))) as 'INTRO' | 'INFO' | 'QUIZ' | 'VICTORY' | 'TUTORIAL',
-    text: quizTriggered
+    text: (quizTriggered && gameState.challenge !== 1)
       ? (gameState.challenge === 4 ? WIZARD_MESSAGES.c4_quiz : WIZARD_MESSAGES.c5_quiz)
       : wizardText,
     onStart: startGame,
@@ -380,7 +413,10 @@ export default function App() {
     quizOptions: quizTriggered
       ? (gameState.challenge === 4
         ? [{ label: "No, it stays 180°", value: 0 }, { label: "Yes, it changes", value: 1 }]
-        : [{ label: "Incident Angle Only", value: 0 }, { label: "Mirror Angle Only", value: 1 }, { label: "Both Angles", value: 2 }]
+        : (gameState.challenge === 1
+          ? [{ label: "Find 2nd Way (+10 Pts)", value: 0 }, { label: "Move into Challenge 2", value: 1 }]
+          : [{ label: "Incident Angle Only", value: 0 }, { label: "Mirror Angle Only", value: 1 }, { label: "Both Angles", value: 2 }]
+        )
       )
       : undefined,
     extraContent: (gameState.challenge === 1 || gameState.challenge === 7) ? (
@@ -388,6 +424,17 @@ export default function App() {
         {gameState.challenge === 7 && (
           <button onClick={resetGame} className="px-2 py-1 bg-yellow-600 text-white rounded-full font-bold flex items-center gap-1 hover:bg-yellow-500 transition-colors">
             <RotateCcw size={16} /> Play Again
+          </button>
+        )}
+        {gameState.challenge === 1 && (gameState.c1Progress.methodA || gameState.c1Progress.methodB) && (
+          <button
+            onClick={() => {
+              setGameState(prev => ({ ...prev, challenge: 2 }));
+              setWizardText(WIZARD_MESSAGES.c2_start);
+            }}
+            className="px-2 py-1 bg-purple-600/50 text-purple-100 rounded-lg text-xs font-bold hover:bg-purple-600 border border-purple-500 transition-colors flex items-center gap-1"
+          >
+            Skip to Challenge 2 <ChevronRight size={12} />
           </button>
         )}
       </>
