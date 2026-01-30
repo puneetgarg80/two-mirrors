@@ -39,7 +39,7 @@ const WIZARD_TUTORIAL_STEPS: TutorialStep[] = [
 
 const WIZARD_MESSAGES = {
   intro: "Welcome, seeker of light! I am the Arcane Optician. Prove your mastery over the twin mirrors to earn the Royal Jewels.",
-  c1_start: "Your first challenge: Tame the light to have exactly ONE reflection. There are TWO distinct ways to do this. Find them both!",
+  c1_start: "Your first challenge: Tame the light to have exactly ONE reflection.",
   c1_progress: "Brilliant! You found one way. Now, find the other path to a single reflection.",
   c2_start: "Excellent work! Your next challenge: Bend the light to have exactly TWO reflections.",
   c3_start: "You are a master! Your next challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray (i.e. deviation = 180°) after exactly 2 reflections.",
