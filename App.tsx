@@ -30,24 +30,24 @@ interface TutorialStep {
 }
 
 const WIZARD_TUTORIAL_STEPS: TutorialStep[] = [
-  { message: "Behold! The Twin Mirrors (the green lines) are your tools of light bending.", highlight: 'mirrors' },
-  { message: "You can rotate the second mirror by dragging this blue handle.", highlight: 'mirrorControl' },
-  { message: "The Orb of Light (the yellow circle) emits the sacred ray. You can move it by dragging along its path.", highlight: 'sourceControl' },
-  { message: "Or use these panels for precise control.", highlight: 'mirrorButton' },
-  { message: "Your quest: Solve the puzzles of reflection to earn the Royal Jewels!", highlight: undefined }
+  { message: "Look! The Twin Mirrors (the green lines) are like magic wands for light.", highlight: 'mirrors' },
+  { message: "You can turn the second mirror by dragging this blue dot.", highlight: 'mirrorControl' },
+  { message: "The Sun (the yellow circle) sends out a ray of light. You can move it by dragging along its path.", highlight: 'sourceControl' },
+  { message: "Or use these buttons to move them carefully.", highlight: 'mirrorButton' },
+  { message: "Your goal: Solve the light puzzles to win the Royal Jewels!", highlight: undefined }
 ];
 
 const WIZARD_MESSAGES = {
-  intro: "Welcome, seeker of light! I am the Arcane Optician. Prove your mastery over the twin mirrors to earn the Royal Jewels.",
-  c1_start: "Your first challenge: Tame the light to have exactly ONE reflection.",
-  c1_progress: "Brilliant! You found one way. Now, find the other path to a single reflection.",
-  c2_start: "Your next challenge: Bend the light to have exactly TWO reflections.",
-  c3_start: "Your next challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray (i.e. deviation = 180°) after exactly 2 reflections.",
-  c4_start: "Remarkable! You found the 90° corner. Your next challenge: KEEP the mirror at 90° and CHANGE the light source angle. Observe what happens to the deviation.",
-  c4_quiz: "You changed the incident angle while keeping the mirrors at 90°. Does the deviation angle change?",
-  c5_start: "Interesting... the deviation stayed constant at 180°. Your next challenge: Check if this rule holds for OTHER angles. Set the mirror to roughly 110°. Then move the light to check constancy.",
-  c5_quiz: "You tested 90° and 110°. In a 2-reflection system, the total deviation depends on:",
-  complete: "Magnificent! You have discovered the General Law: For 2 reflections, Total Deviation depends ONLY on the Mirror Angle. Now try to find out why!",
+  intro: "Welcome! I am the Light Wizard. Master the twin mirrors to earn the Royal Jewels.",
+  c1_start: "Challenge 1: Make the light hit the mirrors and reflect exactly ONCE.",
+  c1_progress: "Great! You found one way. Now, find the other way to get just one reflection.",
+  c2_start: "Next Challenge: Make the light reflect exactly TWO times.",
+  c3_start: "Next Challenge: Make the light go back the way it came! Or parallel to it. The final ray should be moving in the opposite direction after 2 reflections.",
+  c4_start: "Amazing! You found the 90° corner. Now KEEP the mirror at 90° and CHANGE where the light comes from. Watch the Deviation angle.",
+  c4_quiz: "You moved the light, but kept the mirrors at 90°. Did the Deviation angle change?",
+  c5_start: "Interesting... the Deviation stayed at 180°. Now check if this happens for OTHER mirror angles. Set the mirror to about 110°. Then move the light.",
+  c5_quiz: "You tested 90° and 110°. In a 2-reflection system, the Total Deviation depends on:",
+  complete: "You did it! You discovered the Law: For 2 reflections, Total Deviation depends ONLY on the Mirror Angle. You are a Light Master!",
 };
 
 export default function App() {
@@ -154,10 +154,10 @@ export default function App() {
 
             if (newProgress.methodA) {
               // Found A (>90), need B (<=90)
-              setWizardText("Excellent spirit! You found the wide angle way. Now try moving the Light Source away from Mirror on the left and adjusting mirror angle.");
+              setWizardText("Good job! You found one of the ways. Now try moving the Light Source away from the Mirror on the left.");
             } else {
               // Found B (<=90), need A (>90)
-              setWizardText("Excellent spirit! You found the acute angle way. Now try moving the Light Source towards Mirror on the left.");
+              setWizardText("Good job! You found one of the ways. Now try moving the Light Source towards the Mirror on the left.");
             }
           } else if (methodsFound === 2) {
             // Found both! Auto-advance.
@@ -278,10 +278,10 @@ export default function App() {
         // Stay and find 2nd way
         if (gameState.c1Progress.methodA) {
           // Found A (>90), need B (<=90)
-          setWizardText("Excellent spirit! You found the wide angle way. Now try moving the Light Source to a different quadrant (Angle <= 90°) and adjusting mirror angle.");
+          setWizardText("Good job! You found the wide angle way. Now try moving the Light Source to a different spot (Light Angle <= 90°) and turning the mirror.");
         } else {
           // Found B (<=90), need A (>90)
-          setWizardText("Excellent spirit! You found the acute angle way. Now try moving the Light Source towards Mirror on the left.");
+          setWizardText("Good job! You found the sharp angle way. Now try moving the Light Source towards the Mirror on the left.");
         }
       }
     } else if (gameState.challenge === 5) { // Quiz 2: General Theory triggered from C5
@@ -414,7 +414,7 @@ export default function App() {
         ? [{ label: "No, it stays 180°", value: 0 }, { label: "Yes, it changes", value: 1 }]
         : (gameState.challenge === 1
           ? [{ label: "Find 2nd Way (+10 Pts)", value: 0 }, { label: "Move into Challenge 2", value: 1 }]
-          : [{ label: "Incident Angle Only", value: 0 }, { label: "Mirror Angle Only", value: 1 }, { label: "Both Angles", value: 2 }]
+          : [{ label: "Light Angle Only", value: 0 }, { label: "Mirror Angle Only", value: 1 }, { label: "Both Angles", value: 2 }]
         )
       )
       : undefined,

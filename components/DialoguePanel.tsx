@@ -49,7 +49,7 @@ export default function DialoguePanel({
                         onClick={onStart}
                         className="group relative inline-flex items-center justify-center px-8 py-3 font-bold text-white transition-all duration-200 bg-purple-600 font-lg rounded-full hover:bg-purple-500 hover:shadow-[0_0_20px_rgba(147,51,234,0.5)] active:scale-95"
                     >
-                        <span className="mr-2">Start Journey</span>
+                        <span className="mr-2">Start Game</span>
                         <Play size={20} className="fill-current" />
                     </button>
                 </div>

@@ -105,7 +105,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h3 className="text-yellow-400 font-bold flex items-center gap-2">
-                    <Sun size={18} /> Source Angle
+                    <Sun size={18} /> Source Light Angle
                   </h3>
                   <span className="font-mono text-xl font-bold text-white">{Math.round(incidentAngle)}°</span>
                 </div>

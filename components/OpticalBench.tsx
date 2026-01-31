@@ -255,9 +255,9 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
 
         {showInfo && (
           <div className="mt-2 bg-slate-900/90 backdrop-blur-md border border-slate-700 p-4 rounded-xl text-slate-300 text-xs md:text-sm max-w-[200px] shadow-xl animate-in fade-in slide-in-from-top-2">
-            <h1 className="font-bold text-white text-lg mb-2">Optics Lab</h1>
-            <p className="mb-1">Drag <span className="text-cyan-400 font-bold">blue handle</span> to rotate mirror.</p>
-            <p className="mb-2">Drag <span className="text-yellow-400 font-bold">yellow source</span> to move light.</p>
+            <h1 className="font-bold text-white text-lg mb-2">Light Lab</h1>
+            <p className="mb-1">Drag <span className="text-cyan-400 font-bold">blue dot</span> to turn mirror.</p>
+            <p className="mb-2">Drag <span className="text-yellow-400 font-bold">yellow sun</span> to move light.</p>
           </div>
         )}
       </div>
