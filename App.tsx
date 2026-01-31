@@ -42,12 +42,12 @@ const WIZARD_MESSAGES = {
   c1_start: "Challenge 1: Make the light hit the mirrors and reflect exactly ONCE.",
   c1_progress: "Great! You found one way. Now, find the other way to get just one reflection.",
   c2_start: "Next Challenge: Make the light reflect exactly TWO times.",
-  c3_start: "Next Challenge: Make the light go back the way it came! Or parallel to it. The final ray should be moving in the opposite direction after 2 reflections.",
-  c4_start: "Amazing! You found the 90° corner. Now KEEP the mirror at 90° and CHANGE where the light comes from. Watch the Deviation angle.",
-  c4_quiz: "You moved the light, but kept the mirrors at 90°. Did the Deviation angle change?",
-  c5_start: "Interesting... the Deviation stayed at 180°. Now check if this happens for OTHER mirror angles. Set the mirror to about 110°. Then move the light.",
+  c3_start: "Next Challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray (i.e. deviation = 180°) after exactly 2 reflections.",
+  c4_start: "Amazing! You found the 90° corner. Now KEEP the mirror at 90° and CHANGE where the light comes from. Now move the Light Source. Watch the Deviation number carefully. Does it change?",
+  c4_quiz: "You moved the light around, but the mirror stayed at 90°. Did the Deviation amount change?",
+  c5_start: "Interesting... it stayed the same! Does this happen for ANY mirror angle? Let's test it. Set the Mirror to 110°, then move the Light Source.",
   c5_quiz: "You tested 90° and 110°. In a 2-reflection system, the Total Deviation depends on:",
-  complete: "You did it! You discovered the Law: For 2 reflections, Total Deviation depends ONLY on the Mirror Angle. You are a Light Master!",
+  complete: "You found the secret! In this system, the 'Total Deviation' depends ONLY on the Mirror Angle, not on where the light comes from! Now, find out why this happens!",
 };
 
 export default function App() {
