@@ -38,7 +38,7 @@ const WIZARD_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 const WIZARD_MESSAGES = {
-  intro: "Welcome! I am the Light Wizard. Master the twin mirrors to earn the Royal Jewels.",
+  intro: "Welcome! I am the Light Wizard. Master the twin mirrors to discover laws of this world and earn the Royal Jewels.",
   c1_start: "Challenge 1: Make the light hit the mirrors and reflect exactly ONCE.",
   c1_progress: "Great! You found one way. Now, find the other way to get just one reflection.",
   c2_start: "Next Challenge: Make the light reflect exactly TWO times.",
@@ -56,6 +56,7 @@ export default function App() {
   const [incidentAngle, setIncidentAngle] = useState(60);
   const [sourceDist, setSourceDist] = useState(100 * 0.3);
   const [handleRadius, setHandleRadius] = useState(100);
+  const [mirrorOrigin, setMirrorOrigin] = useState<{ x: number; y: number } | null>(null);
 
 
   // Game State
@@ -462,9 +463,9 @@ export default function App() {
 
       {/* --- Toast Notification --- */}
       {showToast && (
-        <div className="absolute top-32 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 zoom-in-95 duration-300 pointer-events-none">
-          <div className="bg-cyan-500 text-slate-900 px-6 py-3 rounded-full shadow-[0_0_20px_rgba(34,211,238,0.5)] font-bold flex items-center gap-2 pointer-events-auto">
-            <Gem size={20} className="fill-slate-900" />
+        <div className="absolute top-28 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 zoom-in-95 duration-300 pointer-events-none">
+          <div className="bg-cyan-500 text-slate-900 px-4 py-2 rounded-full shadow-[0_0_20px_rgba(34,211,238,0.5)] font-medium text-sm flex items-center gap-2 pointer-events-auto">
+            <Gem size={16} className="fill-slate-900" />
             {showToast}
           </div>
         </div>
@@ -481,6 +482,8 @@ export default function App() {
             setSourceDist={handleSetSourceDist}
             handleRadius={handleRadius}
             setHandleRadius={setHandleRadius}
+            mirrorOrigin={mirrorOrigin}
+            setMirrorOrigin={setMirrorOrigin}
             highlight={activeHighlight}
 
             onInteractionEnd={handleInteractionEnd}

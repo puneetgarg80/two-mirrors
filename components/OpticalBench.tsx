@@ -12,6 +12,8 @@ interface OpticalBenchProps {
   setSourceDist: (dist: number) => void;
   handleRadius: number;
   setHandleRadius: (radius: number) => void;
+  mirrorOrigin: { x: number; y: number } | null;
+  setMirrorOrigin: (origin: { x: number; y: number } | null) => void;
   highlight: HighlightTarget | null;
 
   onInteractionEnd: () => void;
@@ -26,6 +28,8 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   setSourceDist,
   handleRadius,
   setHandleRadius,
+  mirrorOrigin,
+  setMirrorOrigin,
   highlight,
 
   onInteractionEnd
@@ -35,7 +39,7 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
     width: typeof window !== 'undefined' ? window.innerWidth : 0,
     height: typeof window !== 'undefined' ? window.innerHeight : 0
   });
-  const [dragTarget, setDragTarget] = useState<'mirror' | 'ray' | null>(null);
+  const [dragTarget, setDragTarget] = useState<'mirror' | 'ray' | 'origin' | null>(null);
   const [showInfo, setShowInfo] = useState(false);
 
 
@@ -73,8 +77,8 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   // Use state for source distance
   // const sourceDist = handleRadius * 0.3; // Replaced by state
 
-  const centerX = 200;
-  const centerY = dimensions.height - 350;
+  const centerX = mirrorOrigin ? mirrorOrigin.x : 200;
+  const centerY = mirrorOrigin ? mirrorOrigin.y : dimensions.height - 350;
 
   const mapToSvg = (p: Point) => ({
     x: centerX + p.x,
@@ -143,7 +147,7 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
     };
   };
 
-  const handlePointerDown = (e: React.PointerEvent, target: 'mirror' | 'ray') => {
+  const handlePointerDown = (e: React.PointerEvent, target: 'mirror' | 'ray' | 'origin') => {
     e.currentTarget.setPointerCapture(e.pointerId);
     setDragTarget(target);
   };
@@ -170,9 +174,23 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
       const clampedDist = Math.max(20, Math.min(newDist, 1000));
       setSourceDist(clampedDist);
 
+
+
       let angle = radToDeg(Math.atan2(dy, dx));
       if (angle < 0) angle += 360;
       setIncidentAngle(Math.round(angle));
+    } else if (dragTarget === 'origin') {
+      // dragging the vertex itself.
+      // svgP is the cursor position in SVG coordinates.
+      // We want the new origin to be exactly where the cursor is.
+      // Note: mapToSvg uses centerX/centerY. We need to be careful not to create a loop if we depend on them.
+      // However, we are setting the STATE which drives the render.
+      // The coordinates from getSvgPoint are relative to the viewport (because of CTM).
+
+      // getSvgPoint returns coordinates in the USER SPACE of the SVG.
+      // If viewBox is not set (which it isn't), user space ~= viewport space = pixels.
+
+      setMirrorOrigin({ x: svgP.x, y: svgP.y });
     }
   };
 
@@ -248,6 +266,7 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
         <button
           className="pointer-events-auto bg-slate-800/80 p-2 rounded-full text-cyan-400 border border-cyan-500/30 hover:bg-slate-700 transition-colors"
           onClick={() => setShowInfo(!showInfo)}
+          onBlur={() => setShowInfo(false)}
           title="Show Instructions"
         >
           <Info size={20} />
@@ -355,7 +374,13 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
         </g>
 
         {/* --- HINGE --- */}
-        <circle cx={svgOrigin.x} cy={svgOrigin.y} r="6" fill="#475569" />
+        <g
+          className="cursor-move active:cursor-grabbing pointer-events-auto"
+          onPointerDown={(e) => handlePointerDown(e, 'origin')}
+        >
+          <circle cx={svgOrigin.x} cy={svgOrigin.y} r="12" fill="transparent" /> {/* Hit area */}
+          <circle cx={svgOrigin.x} cy={svgOrigin.y} r="6" fill="#475569" className="hover:fill-cyan-400 transition-colors" />
+        </g>
 
         {/* --- ANGLE INDICATOR --- */}
         <path d={anglePath} fill="none" stroke="#64748b" strokeWidth="2" strokeDasharray="4 4" />
