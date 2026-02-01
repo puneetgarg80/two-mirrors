@@ -10,6 +10,7 @@ interface DialoguePanelProps {
     quizOptions?: { label: string; value: any; isCorrect?: boolean }[];
     onQuizAnswer?: (index: number) => void;
     extraContent?: React.ReactNode;
+    toast?: React.ReactNode;
 }
 
 export default function DialoguePanel({
@@ -20,6 +21,7 @@ export default function DialoguePanel({
     quizOptions,
     onQuizAnswer,
     extraContent,
+    toast,
     ...props
 }: DialoguePanelProps) {
     const [isExpanded, setIsExpanded] = useState(true);
@@ -60,10 +62,14 @@ export default function DialoguePanel({
     // In-Game Panel
     return (
         <div
-            className={`absolute bottom-4 right-4 z-40 flex flex-col items-end transition-all duration-300 pointer-events-none ${isExpanded ? 'max-w-md w-full' : 'w-auto'}`}
+            className={`absolute bottom-4 right-4 z-40 flex flex-col items-end gap-2 transition-all duration-300 pointer-events-none ${isExpanded ? 'max-w-md w-full' : 'w-auto'}`}
         >
-            {/* Helper to toggle state if needed, though strictly we might just want it always open or smart-collapsed */}
-            {/* For now, just the panel */}
+            {/* Toast Notification (Stacked above) */}
+            {toast && (
+                <div className="pointer-events-auto self-end mb-2">
+                    {toast}
+                </div>
+            )}
 
             <div className="bg-slate-900/95 backdrop-blur-md border border-purple-500/30 rounded-2xl p-2 shadow-2xl shadow-purple-900/20 w-full pointer-events-auto animate-in slide-in-from-bottom fade-in duration-300">
                 <div className="flex gap-4">

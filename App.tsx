@@ -141,7 +141,7 @@ export default function App() {
           newProgress.methodB = true;
           updateNeeded = true;
           setGameState(prev => ({ ...prev, points: prev.points + 10 }));
-          // triggerToast("Discovered: Another Way! +10 Points");
+          triggerToast("Discovered: Another Way! +10 Points");
         }
 
         if (updateNeeded) {
@@ -155,10 +155,10 @@ export default function App() {
 
             if (newProgress.methodA) {
               // Found A (>90), need B (<=90)
-              setWizardText("Good job! You found one of the ways. Now try moving the Light Source away from the Mirror M2 and increase the Mirror angle.");
+              setWizardText("Good job! You found one of the ways. Can you find another? <br /> Try moving the Light Source away from the Mirror M2 and increase the Mirror angle.");
             } else {
               // Found B (<=90), need A (>90)
-              setWizardText("Good job! You found one of the ways. Now try moving the Light Source towards the Mirror M2.");
+              setWizardText("Good job! You found one of the ways. Can you find another? <br /> Try moving the Light Source towards the Mirror M2.");
             }
           } else if (methodsFound === 2) {
             // Found both! Auto-advance.
@@ -279,10 +279,10 @@ export default function App() {
         // Stay and find 2nd way
         if (gameState.c1Progress.methodA) {
           // Found A (>90), need B (<=90)
-          setWizardText("Good job! You found the wide angle way. Now try moving the Light Source to a different spot (Light Angle <= 90°) and turning the mirror.");
+          setWizardText("Good job! You found one of the ways. Can you find another? <br /> Try moving the Light Source away from the Mirror M2 and increase the Mirror angle.");
         } else {
           // Found B (<=90), need A (>90)
-          setWizardText("Good job! You found the sharp angle way. Now try moving the Light Source towards the Mirror on the left.");
+          setWizardText("Good job! You found one of the ways. Can you find another? <br /> Try moving the Light Source towards the Mirror M2.");
         }
       }
     } else if (gameState.challenge === 5) { // Quiz 2: General Theory triggered from C5
@@ -458,17 +458,15 @@ export default function App() {
       )}
 
       {/* --- Unified Dialogue Panel --- */}
-      <DialoguePanel {...dialogueProps} />
-
-      {/* --- Toast Notification --- */}
-      {showToast && (
-        <div className="absolute top-28 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 zoom-in-95 duration-300 pointer-events-none">
-          <div className="bg-cyan-500 text-slate-900 px-4 py-2 rounded-full shadow-[0_0_20px_rgba(34,211,238,0.5)] font-medium text-sm flex items-center gap-2 pointer-events-auto">
-            <Gem size={16} className="fill-slate-900" />
+      <DialoguePanel
+        {...dialogueProps}
+        toast={showToast ? (
+          <div className="bg-cyan-500 text-slate-900 px-4 py-2 rounded-xl shadow-[0_0_20px_rgba(34,211,238,0.5)] font-bold text-sm flex items-center gap-2 border border-cyan-400">
+            <Gem size={18} className="fill-slate-900" />
             {showToast}
           </div>
-        </div>
-      )}
+        ) : undefined}
+      />
 
       <main className="flex-1 relative bg-slate-950">
         {gameState.started && (
