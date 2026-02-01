@@ -42,12 +42,15 @@ const WIZARD_MESSAGES = {
   c1_start: "Challenge 1: Make the light reflect exactly ONCE. <br/> Hint: Try moving the light source and/or mirror.",
   c1_progress: "Great! You found one way. Now, find the other way to get just one reflection.",
   c2_start: "Next Challenge: Make the light reflect exactly TWO times.",
-  c3_start: "Next Challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray. Make sure that: <br/> <ul><li> Deviation is 180° </li> <li> Reflections is 2 </li></ul>",
+  c3_start: "Next Challenge: Create a Parallel-Reflector. <br/> Adjust the mirrors so the final ray is PARALLEL to the incident ray. <br/> Make sure that: <br/> <ul><li> Deviation is 180° </li> <li> Reflections is 2 </li></ul>",
   c4_start: "Amazing! You found the 90° corner. Now KEEP the mirror at 90° and CHANGE where the light comes from. Now move the Light Source. Watch the Deviation number carefully. Does it change?",
   c4_quiz: "You moved the light around, but the mirror stayed at 90°. Did the Deviation amount change?",
   c5_start: "Interesting... it stayed the same! Does this happen for ANY mirror angle? Let's test it. Set the Mirror to 110°, then move the Light Source.",
   c5_quiz: "You tested 90° and 110°. In a 2-reflection system, the Total Deviation depends on:",
   complete: "You found the secret! In this system, the 'Total Deviation' depends ONLY on the Mirror Angle, not on where the light comes from! Now, find out why this happens!",
+  c1_hint_A: "Good job! You found one of the ways. Can you find another? <br /> Try moving the Light Source away from the Mirror M2 and increase the Mirror angle.",
+  c1_hint_B: "Good job! You found one of the ways. Can you find another? <br /> Try moving the Light Source towards the Mirror M2.",
+  toast_discovered_way: "Discovered a way! +10 Points",
 };
 
 export default function App() {
@@ -133,7 +136,7 @@ export default function App() {
           newProgress.methodA = true;
           updateNeeded = true;
           setGameState(prev => ({ ...prev, points: prev.points + 10 }));
-          triggerToast("Discovered: One Way! +10 Points");
+          triggerToast(WIZARD_MESSAGES.toast_discovered_way);
         }
 
         // Method B: Wide Angle
@@ -141,7 +144,7 @@ export default function App() {
           newProgress.methodB = true;
           updateNeeded = true;
           setGameState(prev => ({ ...prev, points: prev.points + 10 }));
-          triggerToast("Discovered: Another Way! +10 Points");
+          triggerToast("Discovered a way! +10 Points");
         }
 
         if (updateNeeded) {
@@ -155,10 +158,10 @@ export default function App() {
 
             if (newProgress.methodA) {
               // Found A (>90), need B (<=90)
-              setWizardText("Good job! You found one of the ways. Can you find another? <br /> Try moving the Light Source away from the Mirror M2 and increase the Mirror angle.");
+              setWizardText(WIZARD_MESSAGES.c1_hint_A);
             } else {
               // Found B (<=90), need A (>90)
-              setWizardText("Good job! You found one of the ways. Can you find another? <br /> Try moving the Light Source towards the Mirror M2.");
+              setWizardText(WIZARD_MESSAGES.c1_hint_B);
             }
           } else if (methodsFound === 2) {
             // Found both! Auto-advance.
@@ -279,10 +282,10 @@ export default function App() {
         // Stay and find 2nd way
         if (gameState.c1Progress.methodA) {
           // Found A (>90), need B (<=90)
-          setWizardText("Good job! You found one of the ways. Can you find another? <br /> Try moving the Light Source away from the Mirror M2 and increase the Mirror angle.");
+          setWizardText(WIZARD_MESSAGES.c1_hint_A);
         } else {
           // Found B (<=90), need A (>90)
-          setWizardText("Good job! You found one of the ways. Can you find another? <br /> Try moving the Light Source towards the Mirror M2.");
+          setWizardText(WIZARD_MESSAGES.c1_hint_B);
         }
       }
     } else if (gameState.challenge === 5) { // Quiz 2: General Theory triggered from C5
