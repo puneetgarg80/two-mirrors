@@ -30,26 +30,26 @@ interface TutorialStep {
 }
 
 const WIZARD_TUTORIAL_STEPS: TutorialStep[] = [
-  { message: "Look at the Twin Mirrors (the green lines), they can bend light.", highlight: 'mirrors' },
-  { message: "You can turn the mirror M2 by dragging this blue dot.", highlight: 'mirrorControl' },
-  { message: "The Sun (the yellow circle) sends out a ray of light. You can move it by dragging along its path.", highlight: 'sourceControl' },
-  { message: "Or use these buttons to move them carefully.", highlight: 'mirrorButton' },
-  { message: "Your goal: Discover the laws of reflection to win the Royal Jewels!", highlight: undefined }
+  { message: "Twin Mirrors (green lines) bend light.", highlight: 'mirrors' },
+  { message: "Turn Mirror M2 by dragging the blue dot.", highlight: 'mirrorControl' },
+  { message: "Move the Sun (yellow circle) by dragging it.", highlight: 'sourceControl' },
+  { message: "Or use these buttons for fine control.", highlight: 'mirrorButton' },
+  { message: "Goal: Discover the laws of reflection to win Jewels!", highlight: undefined }
 ];
 
 const WIZARD_MESSAGES = {
-  intro: "Welcome! I am the Light Wizard. Master the twin mirrors to discover laws of this world and earn the Royal Jewels.",
+  intro: "Welcome! Master the twin mirrors to earn the Royal Jewels.",
   c1_start: "Challenge 1: Make the light reflect exactly ONCE. <br/> Hint: Try moving the light source and/or mirror.",
-  c1_progress: "Great! You found one way. Now, find the other way to get just one reflection.",
-  c2_start: "Next Challenge: Make the light reflect exactly TWO times.",
-  c3_start: "Next Challenge: Create a Parallel-Reflector. <br/> Adjust the mirrors so the final ray is PARALLEL to the incident ray. <br/> Make sure that: <br/> <ul><li> Deviation is 180° </li> <li> Reflections is 2 </li></ul>",
-  c4_start: "Amazing! You found the 90° corner. Now KEEP the mirror at 90° and CHANGE where the light comes from. Now move the Light Source. Watch the Deviation number carefully. Does it change?",
-  c4_quiz: "You moved the light around, but the mirror stayed at 90°. Did the Deviation amount change?",
-  c5_start: "Interesting... it stayed the same! Does this happen for ANY mirror angle? Let's test it. Set the Mirror to 110°, then move the Light Source.",
-  c5_quiz: "You tested 90° and 110°. In a 2-reflection system, the Total Deviation depends on:",
-  complete: "You found the secret! In this system, the 'Total Deviation' depends ONLY on the Mirror Angle, not on where the light comes from! Now, find out why this happens!",
-  c1_hint_A: "Good job! You found one of the ways. Can you find another? <br /> Try moving the Light Source away from the Mirror M2 and increase the Mirror angle.",
-  c1_hint_B: "Good job! You found one of the ways. Can you find another? <br /> Try moving the Light Source towards the Mirror M2.",
+  c1_progress: "Great! Now find the second way to get one reflection.",
+  c2_start: "Challenge 2: Make the light reflect exactly TWO times.",
+  c3_start: "Challenge 3: Create a Parallel-Reflector. <br/> Final ray must be PARALLEL to starting ray (<b> Deviation = 180° </b>) after <b> 2 reflections </b>.",
+  c4_start: "Found it! Now KEEP mirror at 90° and MOVE the Light Source. Does Deviation change?",
+  c4_quiz: "Mirror at 90°, light moved. Did <b> Deviation </b> change?",
+  c5_start: "It stayed constant! Does this happen for <b> ANY angle </b>? Set Mirror to <b> 110° </b> and move the Light.",
+  c5_quiz: "In a 2-reflection system, Total Deviation depends on:",
+  complete: "You found the secret! Total Deviation depends ONLY on the Mirror Angle!",
+  c1_hint_A: "One way found! <br /> Try moving the Light Source away from M2 and increase Mirror angle.",
+  c1_hint_B: "One way found! <br /> Try moving the Light Source towards M2.",
   toast_discovered_way: "Discovered a way! +10 Points",
 };
 
