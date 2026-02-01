@@ -39,7 +39,7 @@ const WIZARD_TUTORIAL_STEPS: TutorialStep[] = [
 
 const WIZARD_MESSAGES = {
   intro: "Welcome! I am the Light Wizard. Master the twin mirrors to discover laws of this world and earn the Royal Jewels.",
-  c1_start: "Challenge 1: Make the light hit the mirrors and reflect exactly ONCE.",
+  c1_start: "Challenge 1: Make the light reflect exactly ONCE. <br/> Hint: Try moving the light source and/or mirror.",
   c1_progress: "Great! You found one way. Now, find the other way to get just one reflection.",
   c2_start: "Next Challenge: Make the light reflect exactly TWO times.",
   c3_start: "Next Challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray (i.e. deviation = 180°) after exactly 2 reflections.",
@@ -133,7 +133,7 @@ export default function App() {
           newProgress.methodA = true;
           updateNeeded = true;
           setGameState(prev => ({ ...prev, points: prev.points + 10 }));
-          triggerToast("Discovered: One Way! +10 Points");
+          // triggerToast("Discovered: One Way! +10 Points");
         }
 
         // Method B: Wide Angle
@@ -141,7 +141,7 @@ export default function App() {
           newProgress.methodB = true;
           updateNeeded = true;
           setGameState(prev => ({ ...prev, points: prev.points + 10 }));
-          triggerToast("Discovered: Another Way! +10 Points");
+          // triggerToast("Discovered: Another Way! +10 Points");
         }
 
         if (updateNeeded) {
@@ -155,10 +155,10 @@ export default function App() {
 
             if (newProgress.methodA) {
               // Found A (>90), need B (<=90)
-              setWizardText("Good job! You found one of the ways. Now try moving the Light Source away from the Mirror on the left.");
+              setWizardText("Good job! You found one of the ways. Now try moving the Light Source away from the Mirror M2 and increase the Mirror angle.");
             } else {
               // Found B (<=90), need A (>90)
-              setWizardText("Good job! You found one of the ways. Now try moving the Light Source towards the Mirror on the left.");
+              setWizardText("Good job! You found one of the ways. Now try moving the Light Source towards the Mirror M2.");
             }
           } else if (methodsFound === 2) {
             // Found both! Auto-advance.
@@ -170,7 +170,7 @@ export default function App() {
               c1Progress: newProgress
             }));
             setWizardText(WIZARD_MESSAGES.c2_start);
-            triggerToast("Challenge 1 Complete!");
+            // triggerToast("Challenge 1 Complete!");
           }
         }
       }
@@ -182,7 +182,7 @@ export default function App() {
           points: prev.points + 10
         }));
         setWizardText(WIZARD_MESSAGES.c3_start);
-        triggerToast("Challenge 2 Complete! +10 Points");
+        // triggerToast("Challenge 2 Complete! +10 Points");
       }
     } else if (gameState.challenge === 3) {
       if (reflectionCount === 2 && path.length >= 2) {
@@ -209,7 +209,7 @@ export default function App() {
           }));
           setWizardText(WIZARD_MESSAGES.c4_start);
           setQuizTriggered(false); // Reset quiz state for next challenge
-          triggerToast("Part 1 Complete! +10 Points");
+          // triggerToast("Part 1 Complete! +10 Points");
         }
       }
     } else if (gameState.challenge === 4) {
@@ -235,7 +235,7 @@ export default function App() {
         if (gameState.c5MirrorAngle === undefined || Math.abs(gameState.c5MirrorAngle - mirrorAngle) > 2) {
           // Reset baseline if mirror changed
           setGameState(prev => ({ ...prev, c5MirrorAngle: mirrorAngle, c5StartAngle: incidentAngle }));
-          triggerToast(`Mirror Set at ${Math.round(mirrorAngle)}°! Now move the Source.`);
+          // triggerToast(`Mirror Set at ${Math.round(mirrorAngle)}°! Now move the Source.`);
         } else {
           // Check Source Movement
           const startIncident = gameState.c5StartAngle ?? incidentAngle;
@@ -261,9 +261,9 @@ export default function App() {
           points: prev.points + 10
         }));
         setWizardText(WIZARD_MESSAGES.c5_start);
-        triggerToast("Correct! Next: The General Case 🤔");
+        // triggerToast("Correct! Next: The General Case 🤔");
       } else {
-        triggerToast("Incorrect. Watch the deviation value closely!");
+        // triggerToast("Incorrect. Watch the deviation value closely!");
       }
     } else if (gameState.challenge === 1) { // Challenge 1 Choice
       const choice = answerIndex; // 0 = Find 2nd Way, 1 = Move Next
@@ -274,7 +274,7 @@ export default function App() {
           challenge: 2
         }));
         setWizardText(WIZARD_MESSAGES.c2_start);
-        triggerToast("Moving to Challenge 2!");
+        // triggerToast("Moving to Challenge 2!");
       } else {
         // Stay and find 2nd way
         if (gameState.c1Progress.methodA) {
@@ -298,9 +298,9 @@ export default function App() {
           points: prev.points + 100
         }));
         setWizardText(WIZARD_MESSAGES.complete);
-        triggerToast("Grand Master! +1 Jewel 💎");
+        // triggerToast("Grand Master! +1 Jewel 💎");
       } else {
-        triggerToast("Incorrect. Think about what truly changed the deviation.");
+        // triggerToast("Incorrect. Think about what truly changed the deviation.");
       }
     }
   };
@@ -381,7 +381,6 @@ export default function App() {
       // End of tutorial -> Start Challenge 1
       setGameState(prev => ({ ...prev, challenge: 1 }));
       setWizardText(WIZARD_MESSAGES.c1_start);
-      triggerToast("Let the Challenge Begin!");
     }
   };
 

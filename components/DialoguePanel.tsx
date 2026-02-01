@@ -74,9 +74,10 @@ export default function DialoguePanel({
                     </div>
 
                     <div className="flex-1 space-y-1">
-                        <div className="text-purple-200 text-sm md:text-base leading-relaxed font-medium">
-                            {text}
-                        </div>
+                        <div
+                            className="text-purple-200 text-sm md:text-base leading-relaxed font-medium"
+                            dangerouslySetInnerHTML={{ __html: text }}
+                        />
 
                         {extraContent && (
                             <div className="mt-2 bg-slate-800/50 rounded-lg p-1 border border-slate-700/50">
