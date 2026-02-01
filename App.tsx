@@ -30,11 +30,11 @@ interface TutorialStep {
 }
 
 const WIZARD_TUTORIAL_STEPS: TutorialStep[] = [
-  { message: "Look! The Twin Mirrors (the green lines) are like magic wands for light.", highlight: 'mirrors' },
+  { message: "Look at the Twin Mirrors (the green lines), they can bend light.", highlight: 'mirrors' },
   { message: "You can turn the second mirror by dragging this blue dot.", highlight: 'mirrorControl' },
   { message: "The Sun (the yellow circle) sends out a ray of light. You can move it by dragging along its path.", highlight: 'sourceControl' },
   { message: "Or use these buttons to move them carefully.", highlight: 'mirrorButton' },
-  { message: "Your goal: Solve the light puzzles to win the Royal Jewels!", highlight: undefined }
+  { message: "Your goal: Discover the laws of reflection to win the Royal Jewels!", highlight: undefined }
 ];
 
 const WIZARD_MESSAGES = {

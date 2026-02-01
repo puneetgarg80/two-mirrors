@@ -564,6 +564,34 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
 
         <circle cx={svgIncidentPoint.x} cy={svgIncidentPoint.y} r="4" fill="#facc15" />
 
+        {/* --- LABELS --- */}
+        <g className="pointer-events-none select-none font-sans font-bold text-xs" style={{ textShadow: '0px 0px 4px #000' }}>
+          {/* Origin O */}
+          <text x={svgOrigin.x - 15} y={svgOrigin.y + 20} fill="#94a3b8">O</text>
+
+          {/* Mirror 1 Label */}
+          <text x={svgOrigin.x + 50} y={svgOrigin.y + 20} fill="#94a3b8">M1</text>
+
+          {/* Mirror 2 Label */}
+          <text
+            x={svgOrigin.x + 50 * Math.cos(degToRad(mirrorAngle)) - 20 * Math.sin(degToRad(mirrorAngle))}
+            y={svgOrigin.y - 50 * Math.sin(degToRad(mirrorAngle)) - 20 * Math.cos(degToRad(mirrorAngle))}
+            fill="#22d3ee"
+          >
+            M2
+          </text>
+
+          {/* Reflection Points */}
+          {reflections.map((ref, i) => {
+            const sp = mapToSvg(ref.point);
+            return (
+              <text key={i} x={sp.x + 10} y={sp.y - 10} fill="#facc15">
+                R{i + 1}
+              </text>
+            );
+          })}
+        </g>
+
       </svg>
     </div>
   );
