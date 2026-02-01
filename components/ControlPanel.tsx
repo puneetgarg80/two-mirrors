@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings2, Sun, X } from 'lucide-react';
+import { Settings2, Sun, X, Plus, Minus } from 'lucide-react';
 import { HighlightTarget } from '../types';
 
 interface ControlPanelProps {
@@ -38,6 +38,19 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       return;
     }
     setActiveControl(null);
+  };
+
+  const adjustAngle = (
+    type: 'mirror' | 'source',
+    delta: number,
+    currentVal: number,
+    setVal: (v: number) => void
+  ) => {
+    let newVal = Math.round(currentVal + delta);
+    if (newVal < 0) newVal += 360;
+    if (newVal >= 360) newVal -= 360;
+    setVal(newVal);
+    onInteractionEnd();
   };
 
   return (
@@ -83,78 +96,84 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           className="fixed top-16 z-40 animate-in fade-in slide-in-from-top-2 duration-200 focus:outline-none origin-top-left"
           style={{ left: activeControl === 'mirror' ? '4rem' : '7rem' }}
         >
-          <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-700 p-6 rounded-2xl shadow-2xl w-80 relative">
+          <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-700 p-2 rounded-xl shadow-2xl min-w-[140px] relative">
 
             {activeControl === 'mirror' && (
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-cyan-400 font-bold flex items-center gap-2">
-                    <Settings2 size={18} /> Mirror Angle
-                  </h3>
-                  <span className="font-mono text-xl font-bold text-white">{Math.round(mirrorAngle)}°</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="360"
-                  value={mirrorAngle}
-                  onChange={(e) => setMirrorAngle(Number(e.target.value))}
-                  onMouseUp={onInteractionEnd}
-                  onTouchEnd={onInteractionEnd}
-                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500 hover:accent-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
-                />
-                <div className="flex justify-between items-center text-xs text-slate-500 font-mono mt-2">
-                  <span>0°</span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="360"
-                    value={Math.round(mirrorAngle)}
-                    onChange={(e) => setMirrorAngle(Number(e.target.value))}
-                    onBlur={(e) => {
-                      onInteractionEnd();
-                      handleBlur(e); // Ensure specific inputs also notify focus strategy if needed
-                    }}
-                    className="w-16 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-center font-mono text-cyan-400 focus:outline-none focus:border-cyan-500"
-                  />
-                  <span>360°</span>
+              <div className="flex flex-col gap-1">
+                <h3 className="text-cyan-400 font-bold text-xs flex items-center gap-1.5 uppercase tracking-wider">
+                  <Settings2 size={12} /> Mirror Angle
+                </h3>
+
+                <div className="flex items-center justify-between gap-1 p-1 bg-slate-800/50 rounded-lg border border-slate-700">
+                  <button
+                    onClick={() => adjustAngle('mirror', -1, mirrorAngle, setMirrorAngle)}
+                    className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+                  >
+                    <Minus size={16} />
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min="0"
+                      max="360"
+                      value={Math.round(mirrorAngle)}
+                      onChange={(e) => setMirrorAngle(Number(e.target.value))}
+                      onBlur={(e) => {
+                        onInteractionEnd();
+                        handleBlur(e);
+                      }}
+                      className="w-12 bg-transparent text-center font-mono text-lg font-bold text-white focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <span className="text-slate-500 text-sm">°</span>
+                  </div>
+
+                  <button
+                    onClick={() => adjustAngle('mirror', 1, mirrorAngle, setMirrorAngle)}
+                    className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+                  >
+                    <Plus size={16} />
+                  </button>
                 </div>
               </div>
             )}
 
             {activeControl === 'source' && (
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-yellow-400 font-bold flex items-center gap-2">
-                    <Sun size={18} /> Source Light Angle
-                  </h3>
-                  <span className="font-mono text-xl font-bold text-white">{Math.round(incidentAngle)}°</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="360"
-                  value={incidentAngle}
-                  onChange={(e) => setIncidentAngle(Number(e.target.value))}
-                  onMouseUp={onInteractionEnd}
-                  onTouchEnd={onInteractionEnd}
-                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500 hover:accent-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
-                />
-                <div className="flex justify-between items-center text-xs text-slate-500 font-mono mt-2">
-                  <span>0°</span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="360"
-                    value={Math.round(incidentAngle)}
-                    onChange={(e) => setIncidentAngle(Number(e.target.value))}
-                    onBlur={(e) => {
-                      onInteractionEnd();
-                      handleBlur(e);
-                    }}
-                    className="w-16 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-center font-mono text-yellow-400 focus:outline-none focus:border-yellow-500"
-                  />
-                  <span>360°</span>
+              <div className="flex flex-col gap-1">
+                <h3 className="text-yellow-400 font-bold text-xs flex items-center gap-1.5 uppercase tracking-wider">
+                  <Sun size={12} /> Light Angle
+                </h3>
+
+                <div className="flex items-center justify-between gap-1 p-1 bg-slate-800/50 rounded-lg border border-slate-700">
+                  <button
+                    onClick={() => adjustAngle('source', -1, incidentAngle, setIncidentAngle)}
+                    className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+                  >
+                    <Minus size={16} />
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min="0"
+                      max="360"
+                      value={Math.round(incidentAngle)}
+                      onChange={(e) => setIncidentAngle(Number(e.target.value))}
+                      onBlur={(e) => {
+                        onInteractionEnd();
+                        handleBlur(e);
+                      }}
+                      className="w-12 bg-transparent text-center font-mono text-lg font-bold text-white focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <span className="text-slate-500 text-sm">°</span>
+                  </div>
+
+                  <button
+                    onClick={() => adjustAngle('source', 1, incidentAngle, setIncidentAngle)}
+                    className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+                  >
+                    <Plus size={16} />
+                  </button>
                 </div>
               </div>
             )}

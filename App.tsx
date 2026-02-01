@@ -31,7 +31,7 @@ interface TutorialStep {
 
 const WIZARD_TUTORIAL_STEPS: TutorialStep[] = [
   { message: "Look at the Twin Mirrors (the green lines), they can bend light.", highlight: 'mirrors' },
-  { message: "You can turn the second mirror by dragging this blue dot.", highlight: 'mirrorControl' },
+  { message: "You can turn the mirror M2 by dragging this blue dot.", highlight: 'mirrorControl' },
   { message: "The Sun (the yellow circle) sends out a ray of light. You can move it by dragging along its path.", highlight: 'sourceControl' },
   { message: "Or use these buttons to move them carefully.", highlight: 'mirrorButton' },
   { message: "Your goal: Discover the laws of reflection to win the Royal Jewels!", highlight: undefined }
@@ -42,7 +42,7 @@ const WIZARD_MESSAGES = {
   c1_start: "Challenge 1: Make the light reflect exactly ONCE. <br/> Hint: Try moving the light source and/or mirror.",
   c1_progress: "Great! You found one way. Now, find the other way to get just one reflection.",
   c2_start: "Next Challenge: Make the light reflect exactly TWO times.",
-  c3_start: "Next Challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray (i.e. deviation = 180°) after exactly 2 reflections.",
+  c3_start: "Next Challenge: Create a Parallel-Reflector. Adjust the mirrors so the final ray is PARALLEL to the incident ray. Make sure that: <br/> <ul><li> Deviation is 180° </li> <li> Reflections is 2 </li></ul>",
   c4_start: "Amazing! You found the 90° corner. Now KEEP the mirror at 90° and CHANGE where the light comes from. Now move the Light Source. Watch the Deviation number carefully. Does it change?",
   c4_quiz: "You moved the light around, but the mirror stayed at 90°. Did the Deviation amount change?",
   c5_start: "Interesting... it stayed the same! Does this happen for ANY mirror angle? Let's test it. Set the Mirror to 110°, then move the Light Source.",
@@ -133,7 +133,7 @@ export default function App() {
           newProgress.methodA = true;
           updateNeeded = true;
           setGameState(prev => ({ ...prev, points: prev.points + 10 }));
-          // triggerToast("Discovered: One Way! +10 Points");
+          triggerToast("Discovered: One Way! +10 Points");
         }
 
         // Method B: Wide Angle
