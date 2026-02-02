@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Mirror, Point, HighlightTarget } from '../types';
 import { degToRad, radToDeg, calculateRayPath } from '../utils/geometry';
-import { Info } from 'lucide-react';
 
 interface OpticalBenchProps {
   mirrorAngle: number;
@@ -15,7 +14,6 @@ interface OpticalBenchProps {
   mirrorOrigin: { x: number; y: number } | null;
   setMirrorOrigin: (origin: { x: number; y: number } | null) => void;
   highlight: HighlightTarget | null;
-
   onInteractionEnd: () => void;
 }
 
@@ -31,16 +29,15 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
   mirrorOrigin,
   setMirrorOrigin,
   highlight,
-
   onInteractionEnd
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 0,
     height: typeof window !== 'undefined' ? window.innerHeight : 0
   });
   const [dragTarget, setDragTarget] = useState<'mirror' | 'ray' | 'origin' | null>(null);
-  const [showInfo, setShowInfo] = useState(false);
 
 
   useEffect(() => {
@@ -260,26 +257,6 @@ const OpticalBench: React.FC<OpticalBenchProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden select-none">
-
-      {/* Reset/Info Overlay */}
-      <div className="absolute top-4 left-4 z-10 pointer-events-none">
-        <button
-          className="pointer-events-auto bg-slate-800/80 p-2 rounded-full text-cyan-400 border border-cyan-500/30 hover:bg-slate-700 transition-colors"
-          onClick={() => setShowInfo(!showInfo)}
-          onBlur={() => setShowInfo(false)}
-          title="Show Instructions"
-        >
-          <Info size={20} />
-        </button>
-
-        {showInfo && (
-          <div className="mt-2 bg-slate-900/90 backdrop-blur-md border border-slate-700 p-4 rounded-xl text-slate-300 text-xs md:text-sm max-w-[200px] shadow-xl animate-in fade-in slide-in-from-top-2">
-            <h1 className="font-bold text-white text-lg mb-2">Light Lab</h1>
-            <p className="mb-1">Drag <span className="text-cyan-400 font-bold">blue dot</span> to turn mirror.</p>
-            <p className="mb-2">Drag <span className="text-yellow-400 font-bold">yellow sun</span> to move light.</p>
-          </div>
-        )}
-      </div>
 
       {/* Persistent Deviation Display */}
       <div className="absolute top-20 right-4 z-0 pointer-events-none">

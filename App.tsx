@@ -39,7 +39,7 @@ const WIZARD_TUTORIAL_STEPS: TutorialStep[] = [
 
 const WIZARD_MESSAGES = {
   intro: "Welcome! Master the twin mirrors to earn the Royal Jewels.",
-  c1_start: "Challenge 1: Make the light reflect exactly ONCE. <br/> Hint: Try moving the light source and/or mirror.",
+  c1_start: "Challenge 1: Make the light reflect exactly ONCE.",
   c1_progress: "Great! Now find the second way to get one reflection.",
   c2_start: "Challenge 2: Make the light reflect exactly TWO times.",
   c3_start: "Challenge 3: Create a Parallel-Reflector. <br/> Final ray must be PARALLEL to starting ray (<b> Deviation = 180° </b>) after <b> 2 reflections </b>.",
@@ -51,6 +51,14 @@ const WIZARD_MESSAGES = {
   c1_hint_A: "One way found! <br /> Try moving the Light Source away from M2 and increase Mirror angle.",
   c1_hint_B: "One way found! <br /> Try moving the Light Source towards M2.",
   toast_discovered_way: "Discovered a way! +10 Points",
+};
+
+const CHALLENGE_HINTS = {
+  1: "Try moving the light source and/or mirror.",
+  2: "You need the light to bounce off BOTH mirrors.",
+  3: "Parallel rays mean the angle between them is 0° (or 180° deviation). Think about the relationship between the two mirror angles.",
+  4: "Keep the mirror fixed at 90°. Does moving the source change the reflection geometry?",
+  5: "Try a different Mirror Angle. Does the deviation change if you move the source now?",
 };
 
 export default function App() {
@@ -421,14 +429,16 @@ export default function App() {
         )
       )
       : undefined,
-    extraContent: (gameState.challenge === 1 || gameState.challenge === 7) ? (
-      <>
-        {gameState.challenge === 7 && (
+    extraContent: (() => {
+      if (gameState.challenge === 7) {
+        return (
           <button onClick={resetGame} className="px-2 py-1 bg-yellow-600 text-white rounded-full font-bold flex items-center gap-1 hover:bg-yellow-500 transition-colors">
             <RotateCcw size={16} /> Play Again
           </button>
-        )}
-        {gameState.challenge === 1 && (gameState.c1Progress.methodA || gameState.c1Progress.methodB) && (
+        );
+      }
+      if (gameState.challenge === 1 && (gameState.c1Progress.methodA || gameState.c1Progress.methodB)) {
+        return (
           <button
             onClick={() => {
               setGameState(prev => ({ ...prev, challenge: 2 }));
@@ -438,9 +448,10 @@ export default function App() {
           >
             Skip to Challenge 2 <ChevronRight size={12} />
           </button>
-        )}
-      </>
-    ) : undefined
+        );
+      }
+      return undefined;
+    })()
   };
 
   return (
@@ -497,7 +508,7 @@ export default function App() {
           incidentAngle={incidentAngle}
           setIncidentAngle={handleSetIncidentAngle}
           highlight={activeHighlight}
-
+          hintText={CHALLENGE_HINTS[gameState.challenge as keyof typeof CHALLENGE_HINTS]}
           onInteractionEnd={handleInteractionEnd}
         />
       )}
