@@ -211,9 +211,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                 <h3 className="text-yellow-400 font-bold text-xs flex items-center gap-1.5 uppercase tracking-wider mb-1">
                   <Lightbulb size={14} className="fill-current" /> Hint
                 </h3>
-                <div className="text-slate-200 text-sm font-medium leading-relaxed">
-                  {hintText}
-                </div>
+                <div
+                  className="text-slate-200 text-sm font-medium leading-relaxed [&>ul]:list-disc [&>ul]:pl-4 [&>ul]:space-y-1"
+                  dangerouslySetInnerHTML={{ __html: hintText }}
+                />
               </div>
             )}
 

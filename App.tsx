@@ -44,21 +44,23 @@ const WIZARD_MESSAGES = {
   c2_start: "Challenge 2: Make the light reflect exactly TWO times.",
   c3_start: "Challenge 3: Create a Parallel-Reflector. <br/> Final ray must be PARALLEL to starting ray (<b> Deviation = 180° </b>) after <b> 2 reflections </b>.",
   c4_start: "Found it! Now KEEP mirror at 90° and MOVE the Light Source. Does Deviation change?",
-  c4_quiz: "Mirror at 90°, light moved. Did <b> Deviation </b> change?",
+  c4_quiz: "Mirror at 90°, light moved. Did <b> Deviation </b> change from 180°?",
   c5_start: "It stayed constant! Does this happen for <b> ANY angle </b>? Set Mirror to <b> 110° </b> and move the Light.",
   c5_quiz: "In a 2-reflection system, Total Deviation depends on:",
   complete: "You found the secret! Total Deviation depends ONLY on the Mirror Angle!",
-  c1_hint_A: "One way found! <br /> Try moving the Light Source away from M2 and increase Mirror angle.",
-  c1_hint_B: "One way found! <br /> Try moving the Light Source towards M2.",
+  c1_hint_A: "One way found! Can you find another way?",
+  c1_hint_B: "One way found! Can you find another way?",
   toast_discovered_way: "Discovered a way! +10 Points",
 };
 
 const CHALLENGE_HINTS = {
   1: "Try moving the light source and/or mirror.",
+  "1_found_A": "Try moving the Light Source away from M2 and increase Mirror angle.",
+  "1_found_B": "Try moving the Light Source towards M2.",
   2: "You need the light to bounce off BOTH mirrors.",
-  3: "Parallel rays mean the angle between them is 0° (or 180° deviation). Think about the relationship between the two mirror angles.",
-  4: "Keep the mirror fixed at 90°. Does moving the source change the reflection geometry?",
-  5: "Try a different Mirror Angle. Does the deviation change if you move the source now?",
+  3: "Change mirror angle such that <ul> <li> Reflection = 2 </li> <li> Deviation = 180° </li></ul>",
+  4: "Keep the mirror fixed at 90°. <br/> Move the Light Source. <br/>Observe the Deviation.",
+  5: "Set mirror to 110°. <br /> Move the Light Source. <br /> Observe the Deviation.",
 };
 
 export default function App() {
@@ -508,7 +510,16 @@ export default function App() {
           incidentAngle={incidentAngle}
           setIncidentAngle={handleSetIncidentAngle}
           highlight={activeHighlight}
-          hintText={CHALLENGE_HINTS[gameState.challenge as keyof typeof CHALLENGE_HINTS]}
+          hintText={
+            gameState.challenge === 1
+              ? (gameState.c1Progress.methodA
+                ? CHALLENGE_HINTS["1_found_A"]
+                : gameState.c1Progress.methodB
+                  ? CHALLENGE_HINTS["1_found_B"]
+                  : CHALLENGE_HINTS[1]
+              )
+              : CHALLENGE_HINTS[gameState.challenge as keyof typeof CHALLENGE_HINTS]
+          }
           onInteractionEnd={handleInteractionEnd}
         />
       )}
